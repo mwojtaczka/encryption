@@ -4,8 +4,8 @@ import lombok.Value;
 
 import javax.crypto.SecretKey;
 
-@Value
-public class EncryptionMaterials {
+@Value(staticConstructor = "of")
+class EncryptionMaterials {
 
 	private SecretKey secretKey;
 	private byte[] iv;

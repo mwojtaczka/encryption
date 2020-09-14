@@ -2,9 +2,10 @@ package com.maciek.wojtaczka;
 
 import javax.crypto.SecretKey;
 
-@FunctionalInterface
 public interface CipherMechanism {
 
-	CipherResult cipher(byte[] content, SecretKey secretKey);
+	CipherResult encrypt(byte[] content, SecretKey secretKey);
+
+	byte[] decrypt(byte[] cipherContent, EncryptionMaterials encryptionMaterials);
 
 }

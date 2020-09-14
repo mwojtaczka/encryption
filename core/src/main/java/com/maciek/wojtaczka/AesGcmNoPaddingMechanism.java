@@ -20,7 +20,7 @@ public class AesGcmNoPaddingMechanism implements CipherMechanism {
 	private static final int AUTH_TAG_SIZE = 128;
 
 	@Override
-	public CipherResult cipher(byte[] content, SecretKey secretKey) {
+	public CipherResult encrypt(byte[] content, SecretKey secretKey) {
 		try {
 			byte[] iv = generateInitialVector();
 			byte[] cipherContent = cipher(content, iv, secretKey);
@@ -47,5 +47,36 @@ public class AesGcmNoPaddingMechanism implements CipherMechanism {
 		SecureRandom secureRandom = new SecureRandom();
 		secureRandom.nextBytes(iv);
 		return iv;
+	}
+
+	@Override
+	public byte[] decrypt(byte[] cipherContent, EncryptionMaterials encryptionMaterials) {
+		try {
+			byte[] iv = encryptionMaterials.getIv();
+			verifyIvLength(iv);
+			SecretKey secretKey = encryptionMaterials.getSecretKey();
+
+			return decipher(cipherContent, iv, secretKey);
+
+		} catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException |
+			NoSuchPaddingException | IllegalBlockSizeException e) {
+			throw new EncryptionException(e.getMessage(), e);
+		}
+
+	}
+
+	private void verifyIvLength(byte[] iv) {
+		if (iv.length != GCM_IV_SIZE) {
+			throw new EncryptionException("Invalid IV length for " + ENCRYPTION_MECHANISM + " mechanism. " +
+				"Should be: " + GCM_IV_SIZE + " but is: " + iv.length);
+		}
+	}
+
+	private byte[] decipher(byte[] cipherText, byte[] iv, SecretKey secretKey) throws NoSuchAlgorithmException,
+		NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
+		BadPaddingException {
+		Cipher cipher = Cipher.getInstance(ENCRYPTION_MECHANISM);
+		cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(AUTH_TAG_SIZE, iv));
+		return cipher.doFinal(cipherText);
 	}
 }
