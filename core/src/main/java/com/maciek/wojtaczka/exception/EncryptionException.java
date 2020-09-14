@@ -1,0 +1,7 @@
+package com.maciek.wojtaczka.exception;
+
+public class EncryptionException extends RuntimeException {
+	public EncryptionException(String message, Exception e) {
+		super(message, e);
+	}
+}
