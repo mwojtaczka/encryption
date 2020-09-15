@@ -1,6 +1,6 @@
-package com.maciek.wojtaczka;
+package com.maciek.wojtaczka.encryption.core;
 
-import com.maciek.wojtaczka.exception.EncryptionException;
+import com.maciek.wojtaczka.encryption.core.exception.EncryptionException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -18,6 +18,11 @@ public class AesGcmNoPaddingMechanism implements CipherMechanism {
 	private static final String ENCRYPTION_MECHANISM = "AES/GCM/NoPadding";
 	private static final int GCM_IV_SIZE = 12;
 	private static final int AUTH_TAG_SIZE = 128;
+
+	@Override
+	public String getType() {
+		return ENCRYPTION_MECHANISM;
+	}
 
 	@Override
 	public CipherResult encrypt(byte[] content, SecretKey secretKey) {

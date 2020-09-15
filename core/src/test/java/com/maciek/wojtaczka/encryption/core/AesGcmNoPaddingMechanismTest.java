@@ -1,18 +1,22 @@
-package com.maciek.wojtaczka;
+package com.maciek.wojtaczka.encryption.core;
 
-import com.maciek.wojtaczka.exception.EncryptionException;
+import com.maciek.wojtaczka.encryption.core.exception.EncryptionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
 
+import static java.nio.charset.StandardCharsets.UTF_16;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 class AesGcmNoPaddingMechanismTest {
+
+	private static final Charset CHARSET = UTF_16;
 
 	private AesGcmNoPaddingMechanism cipherMechanism;
 
@@ -26,10 +30,10 @@ class AesGcmNoPaddingMechanismTest {
 		String toBeEncrypted = "foo_boo";
 		SecretKey secretKey = generateAesSecretKey();
 
-		CipherResult cipherResult = cipherMechanism.encrypt(toBeEncrypted.getBytes(), secretKey);
+		CipherResult cipherResult = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
 
 		assertAll(
-			() -> assertThat(cipherResult.getCipherContent()).isNotEqualTo(toBeEncrypted.getBytes()),
+			() -> assertThat(cipherResult.getCipherContent()).isNotEqualTo(toBeEncrypted.getBytes(CHARSET)),
 			() -> assertThat(cipherResult.getCipherMechanism()).isEqualTo("AES/GCM/NoPadding")
 		);
 	}
@@ -39,13 +43,13 @@ class AesGcmNoPaddingMechanismTest {
 		String toBeEncrypted = "foo_boo";
 		SecretKey secretKey = generateAesSecretKey();
 
-		CipherResult cipherResult = cipherMechanism.encrypt(toBeEncrypted.getBytes(), secretKey);
+		CipherResult cipherResult = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
 		byte[] cipherContent = cipherResult.getCipherContent();
 		EncryptionMaterials encryptionMaterials = EncryptionMaterials.of(secretKey, cipherResult.getIv());
 
 		byte[] decryptedContent = cipherMechanism.decrypt(cipherContent, encryptionMaterials);
 
-		assertThat(decryptedContent).isEqualTo(toBeEncrypted.getBytes());
+		assertThat(decryptedContent).isEqualTo(toBeEncrypted.getBytes(CHARSET));
 	}
 
 	@Test
@@ -53,8 +57,8 @@ class AesGcmNoPaddingMechanismTest {
 		String toBeEncrypted = "foo_boo";
 		SecretKey secretKey = generateAesSecretKey();
 
-		CipherResult cipherResult1 = cipherMechanism.encrypt(toBeEncrypted.getBytes(), secretKey);
-		CipherResult cipherResult2 = cipherMechanism.encrypt(toBeEncrypted.getBytes(), secretKey);
+		CipherResult cipherResult1 = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
+		CipherResult cipherResult2 = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
 
 		assertThat(cipherResult1.getCipherContent()).isNotEqualTo(cipherResult2.getCipherContent());
 	}

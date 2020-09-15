@@ -1,4 +1,4 @@
-package com.maciek.wojtaczka;
+package com.maciek.wojtaczka.encryption.core;
 
 import lombok.Value;
 

@@ -23,6 +23,8 @@
 		<!--test libraries-->
 		<junit-jupiter-engine.version>5.6.0</junit-jupiter-engine.version>
 		<assertj-core.version>3.15.0</assertj-core.version>
+		<mockito-core.version>3.2.4</mockito-core.version>
+		<commons-lang3.version>3.11</commons-lang3.version>
 	</properties>
 
 	<dependencyManagement>
@@ -53,6 +55,25 @@
 				<version>${assertj-core.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>${mockito-core.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-junit-jupiter</artifactId>
+				<version>${mockito-core.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons-lang3.version}</version>
+				<scope>test</scope>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

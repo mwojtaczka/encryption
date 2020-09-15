@@ -1,4 +1,4 @@
-package com.maciek.wojtaczka.exception;
+package com.maciek.wojtaczka.encryption.core.exception;
 
 public class EncryptionException extends RuntimeException {
 
