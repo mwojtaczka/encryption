@@ -9,15 +9,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.UTF_16;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EncryptionFacadeTest {
+
+	private static final Charset CHARSET = UTF_16;
 
 	@Mock
 	private EncryptionKeyProvider keyProvider;
@@ -33,23 +37,23 @@ class EncryptionFacadeTest {
 	@Test
 	void shouldNotContainPlainValue() {
 		String toBeEncrypted = "foo_boo";
+		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
 		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
 
-		String encrypted = encryptionFacade.encryptString(toBeEncrypted, "test_key", "AES/GCM/NoPadding");
-		CipherRecord cipherRecord = CipherRecord.of(encrypted);
+		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
 
-		assertThat(encrypted).doesNotContain("foo_boo");
+		assertThat(cipherRecord.getCipherContent()).isNotEqualTo(toBeEncryptedBytes);
 	}
 
 	@Test
 	void shouldContainEncryptedValueAndMetadata() {
 		String toBeEncrypted = "foo_boo";
+		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
 		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
 
-		String encrypted = encryptionFacade.encryptString(toBeEncrypted, "test_key", "AES/GCM/NoPadding");
-		CipherRecord cipherRecord = CipherRecord.of(encrypted);
+		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
 
 		assertAll(
 			() -> assertThat(cipherRecord.getCipherContent()).isNotNull(),
@@ -63,28 +67,30 @@ class EncryptionFacadeTest {
 	void shouldEncryptAndDecrypt() {
 
 		String toBeEncrypted = "foo_boo";
+		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
 		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
 		when(keyProvider.getKey("test_key", 1)).thenReturn(test_key);
 
-		String encrypted = encryptionFacade.encryptString(toBeEncrypted, "test_key", "AES/GCM/NoPadding");
-		String decrypted = encryptionFacade.decryptString(encrypted, "test_key", "AES/GCM/NoPadding");
+		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
+		byte[] decrypted = encryptionFacade.decryptRecord(cipherRecord, "test_key", "AES/GCM/NoPadding");
 
-		assertThat(decrypted).isEqualTo(toBeEncrypted);
+		assertThat(decrypted).isEqualTo(toBeEncryptedBytes);
 	}
 
 	@Test
 	void shouldEncryptAndDecryptRandomUtf16String() {
 
 		String toBeEncrypted = RandomStringUtils.random(50);
+		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
 		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
 		when(keyProvider.getKey("test_key", 1)).thenReturn(test_key);
 
-		String encrypted = encryptionFacade.encryptString(toBeEncrypted, "test_key", "AES/GCM/NoPadding");
-		String decrypted = encryptionFacade.decryptString(encrypted, "test_key", "AES/GCM/NoPadding");
+		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
+		byte[] decrypted = encryptionFacade.decryptRecord(cipherRecord, "test_key", "AES/GCM/NoPadding");
 
-		assertThat(decrypted).isEqualTo(toBeEncrypted);
+		assertThat(decrypted).isEqualTo(toBeEncryptedBytes);
 	}
 
 	private SecretKey generateAesSecretKey() {

@@ -28,10 +28,10 @@ class FieldExtractorTest {
 			.sensitive("sensitive")
 			.build();
 
-		final Set<FieldExtractor.FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
+		final Set<FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
 
 		assertThat(toBeEncrypted).hasSize(1);
-		Iterator<FieldExtractor.FieldWithContext> iterator = toBeEncrypted.iterator();
+		Iterator<FieldWithContext> iterator = toBeEncrypted.iterator();
 		String sensitive = (String) iterator.next().getValue();
 		assertThat(sensitive).isEqualTo("sensitive");
 	}
@@ -42,7 +42,7 @@ class FieldExtractorTest {
 			.nonSensitive("non sensitive")
 			.build();
 
-		final Set<FieldExtractor.FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
+		final Set<FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
 
 		assertThat(toBeEncrypted).hasSize(0);
 	}
@@ -54,10 +54,10 @@ class FieldExtractorTest {
 			.sensitives(List.of("sensitive1", "sensitive2"))
 			.build();
 
-		final Set<FieldExtractor.FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
+		final Set<FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
 
 		assertThat(toBeEncrypted).hasSize(1);
-		Iterator<FieldExtractor.FieldWithContext> iterator = toBeEncrypted.iterator();
+		Iterator<FieldWithContext> iterator = toBeEncrypted.iterator();
 		List value = (List) iterator.next().getValue();
 		assertThat(value.get(0)).isEqualTo("sensitive1");
 		assertThat(value.get(1)).isEqualTo("sensitive2");
@@ -74,10 +74,10 @@ class FieldExtractorTest {
 			.embeddedEntity(embeddedEntity)
 			.build();
 
-		final Set<FieldExtractor.FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
+		final Set<FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
 
 		assertThat(toBeEncrypted).hasSize(1);
-		Iterator<FieldExtractor.FieldWithContext> iterator = toBeEncrypted.iterator();
+		Iterator<FieldWithContext> iterator = toBeEncrypted.iterator();
 		String sensitive = (String) iterator.next().getValue();
 		assertThat(sensitive).isEqualTo("embedded sensitive");
 	}
@@ -93,10 +93,10 @@ class FieldExtractorTest {
 			.embeddedEntity(embeddedEntity)
 			.build();
 
-		final Set<FieldExtractor.FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
+		final Set<FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
 
 		assertThat(toBeEncrypted).hasSize(1);
-		Iterator<FieldExtractor.FieldWithContext> iterator = toBeEncrypted.iterator();
+		Iterator<FieldWithContext> iterator = toBeEncrypted.iterator();
 		List value = (List) iterator.next().getValue();
 		assertThat(value.get(0)).isEqualTo("embedded sensitive in list");
 	}
@@ -117,7 +117,7 @@ class FieldExtractorTest {
 			.embeddedEntities(List.of(embeddedEntity1, embeddedEntity2))
 			.build();
 
-		final Set<FieldExtractor.FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
+		final Set<FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
 
 		assertThat(toBeEncrypted).hasSize(2);
 	}
@@ -142,7 +142,7 @@ class FieldExtractorTest {
 			.embeddedEntities(List.of(embeddedEntity1, embeddedEntity2))
 			.build();
 
-		final Set<FieldExtractor.FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
+		final Set<FieldWithContext> toBeEncrypted = fieldExtractor.getAllFieldsToBeEncrypted(entity);
 
 		assertThat(toBeEncrypted).hasSize(6);
 	}
@@ -170,6 +170,5 @@ class FieldExtractorTest {
 		@Encrypt
 		List<String> sensitives;
 	}
-
 
 }

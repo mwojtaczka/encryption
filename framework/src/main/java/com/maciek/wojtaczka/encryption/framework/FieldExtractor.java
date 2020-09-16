@@ -28,11 +28,11 @@ class FieldExtractor {
 		return stream(entity.getClass().getDeclaredFields())
 			.filter(field -> isFieldAnnotatedBy(field, annotationType))
 			.map(field -> new FieldWithContext(field, entity))
-			.flatMap(fieldWithContext -> recursivelyGetAllFieldsAnnotatedBy(fieldWithContext, annotationType));
+			.flatMap(fieldWithContext -> recursivelyGetAllStringFieldsAnnotatedBy(fieldWithContext, annotationType));
 	}
 
-	private Stream<? extends FieldWithContext> recursivelyGetAllFieldsAnnotatedBy(FieldWithContext fieldWithContext,
-																				  Class<? extends Annotation>... annotationType) {
+	private Stream<? extends FieldWithContext> recursivelyGetAllStringFieldsAnnotatedBy(FieldWithContext fieldWithContext,
+																						Class<? extends Annotation>... annotationType) {
 
 		try {
 			Object fieldValue = fieldWithContext.getValue();
@@ -85,18 +85,4 @@ class FieldExtractor {
 			.collect(Collectors.toSet());
 	}
 
-	static class FieldWithContext {
-		private final Field field;
-		private final Object context;
-
-		FieldWithContext(Field field, Object context) {
-			this.field = field;
-			this.context = context;
-		}
-
-		Object getValue() throws IllegalAccessException {
-			this.field.setAccessible(true);
-			return this.field.get(this.context);
-		}
-	}
 }
