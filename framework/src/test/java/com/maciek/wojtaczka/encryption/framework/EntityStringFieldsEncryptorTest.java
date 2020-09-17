@@ -43,7 +43,7 @@ class EntityStringFieldsEncryptorTest {
 	@Test
 	void shouldNotContainOriginalValue() {
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
 		Entity entity = Entity.builder()
 			.sensitive1("sensitive1")
 			.sensitive2("sensitive2")
@@ -60,8 +60,8 @@ class EntityStringFieldsEncryptorTest {
 	@Test
 	void shouldEncryptAndDecryptEntityStringFields() {
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1)).thenReturn(test_key);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
 		Entity entity = Entity.builder()
 			.sensitive1("sensitive1")
 			.sensitive2("sensitive2")

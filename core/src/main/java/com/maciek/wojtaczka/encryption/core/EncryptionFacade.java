@@ -27,7 +27,7 @@ public class EncryptionFacade {
 		if (cipherMechanism == null)
 			throw new EncryptionException(mechanismType + " not found in the registry");
 
-		EncryptionKey latestKey = keyProvider.getLatestKey(keyName);
+		EncryptionKey latestKey = keyProvider.getLatestKey(keyName, mechanismType);
 		CipherResult cipherResult = cipherMechanism.encrypt(content, latestKey.getSecretKey());
 
 		return CipherRecord.of(cipherResult, latestKey);
@@ -39,7 +39,7 @@ public class EncryptionFacade {
 		if (cipherMechanism == null)
 			throw new EncryptionException(mechanismType + " not found in the registry");
 
-		EncryptionKey latestKey = keyProvider.getKey(keyName, cipherRecord.getEncryptionKeyVersion());
+		EncryptionKey latestKey = keyProvider.getKey(keyName, cipherRecord.getEncryptionKeyVersion(), mechanismType);
 		EncryptionMaterials encryptionMaterials = EncryptionMaterials.of(latestKey.getSecretKey(), cipherRecord.getIv());
 
 		return cipherMechanism.decrypt(cipherRecord.getCipherContent(), encryptionMaterials);

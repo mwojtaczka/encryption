@@ -39,7 +39,7 @@ class EncryptionFacadeTest {
 		String toBeEncrypted = "foo_boo";
 		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
 
 		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
 
@@ -51,7 +51,7 @@ class EncryptionFacadeTest {
 		String toBeEncrypted = "foo_boo";
 		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
 
 		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
 
@@ -69,8 +69,8 @@ class EncryptionFacadeTest {
 		String toBeEncrypted = "foo_boo";
 		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1)).thenReturn(test_key);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
 
 		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
 		byte[] decrypted = encryptionFacade.decryptRecord(cipherRecord, "test_key", "AES/GCM/NoPadding");
@@ -84,8 +84,8 @@ class EncryptionFacadeTest {
 		String toBeEncrypted = RandomStringUtils.random(50);
 		byte[] toBeEncryptedBytes = toBeEncrypted.getBytes(CHARSET);
 		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1)).thenReturn(test_key);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
 
 		CipherRecord cipherRecord = encryptionFacade.encryptBytes(toBeEncryptedBytes, "test_key", "AES/GCM/NoPadding");
 		byte[] decrypted = encryptionFacade.decryptRecord(cipherRecord, "test_key", "AES/GCM/NoPadding");
