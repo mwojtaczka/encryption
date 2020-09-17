@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,9 +28,9 @@ import static org.mockito.Mockito.when;
 class EntityStringFieldsEncryptorTest {
 
 	@Mock
-	EncryptionKeyProvider keyProvider;
+	private EncryptionKeyProvider keyProvider;
 
-	EntityStringFieldsEncryptor entityEncryptor;
+	private EntityStringFieldsEncryptor entityEncryptor;
 
 	@BeforeEach
 	void setup() {
@@ -80,6 +81,46 @@ class EntityStringFieldsEncryptorTest {
 		);
 	}
 
+	@Test
+	void shouldEncryptAndDecryptEntityStringListField() {
+		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		Entity entity = Entity.builder()
+			.sensitiveList(List.of("sensitive"))
+			.build();
+
+		entityEncryptor.encryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getSensitiveList()).doesNotContain("sensitive")
+		);
+
+		entityEncryptor.decryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getSensitiveList()).containsOnly("sensitive")
+		);
+	}
+
+	@Test
+	void shouldEncryptAndDecryptEntityStringSetField() {
+		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		Entity entity = Entity.builder()
+			.sensitiveSet(Set.of("sensitive"))
+			.build();
+
+		entityEncryptor.encryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getSensitiveSet()).doesNotContain("sensitive")
+		);
+
+		entityEncryptor.decryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getSensitiveSet()).containsOnly("sensitive")
+		);
+	}
+
 	private SecretKey generateAesSecretKey() {
 		SecureRandom secureRandom = new SecureRandom();
 		byte[] key = new byte[16];
@@ -95,6 +136,10 @@ class EntityStringFieldsEncryptorTest {
 		String sensitive1;
 		@Encrypt
 		String sensitive2;
+		@Encrypt
+		List<String> sensitiveList;
+		@Encrypt
+		Set<String> sensitiveSet;
 	}
 
 
