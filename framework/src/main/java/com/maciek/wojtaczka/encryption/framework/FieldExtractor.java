@@ -19,41 +19,43 @@ class FieldExtractor {
 
 	private static final Class<Encrypt> TO_ENCRYPT = Encrypt.class;
 
-	public Set<FieldWithContext> getAllFieldsToBeEncrypted(Object entity) {
-		return getFieldsAnnotatedBy(entity, TO_ENCRYPT)
+	public Set<FieldWithContext> getAllFieldsToBeEncrypted(Object entity, Class<?> clazzOfTheField) {
+		return getFieldsAnnotatedBy(entity, clazzOfTheField, TO_ENCRYPT)
 			.collect(Collectors.toSet());
 	}
 
-	private Stream<? extends FieldWithContext> getFieldsAnnotatedBy(Object entity, Class<? extends Annotation>... annotationType) {
+	private Stream<? extends FieldWithContext> getFieldsAnnotatedBy(Object entity, Class<?> clazzOfTheField, Class<? extends Annotation>... annotationType) {
 		return stream(entity.getClass().getDeclaredFields())
 			.filter(field -> isFieldAnnotatedBy(field, annotationType))
-			.map(field -> new FieldWithContext(field, entity))
-			.flatMap(fieldWithContext -> recursivelyGetAllStringFieldsAnnotatedBy(fieldWithContext, annotationType));
+			.map(field -> new FieldWithContext(field, entity, null))
+			.flatMap(fieldWithContext -> recursivelyGetAllStringFieldsAnnotatedBy(fieldWithContext, clazzOfTheField, annotationType));
 	}
 
-	private Stream<? extends FieldWithContext> recursivelyGetAllStringFieldsAnnotatedBy(FieldWithContext fieldWithContext,
+	private Stream<? extends FieldWithContext> recursivelyGetAllStringFieldsAnnotatedBy(FieldWithContext fieldWithContext, Class<?> clazzOfTheField,
 																						Class<? extends Annotation>... annotationType) {
 
 		try {
 			Object fieldValue = fieldWithContext.getValue();
 			if (fieldValue == null) {
 				return Stream.of();
-			} else if (isOfClassOrSubclass(fieldValue, Iterable.class) && areElementsOfClassOrSubclass((Iterable) fieldValue, String.class)) {
-
-				return Stream.of(fieldWithContext);
-
-			} else if (isOfClassOrSubclass(fieldValue, Iterable.class) && !areElementsOfClassOrSubclass((Iterable) fieldValue, String.class)) {
-
-				Iterable<?> iterable = (Iterable) fieldValue;
-				return StreamSupport.stream(iterable.spliterator(), false)
-					.flatMap(o -> getFieldsAnnotatedBy(o, annotationType));
-
-			} else if (isOfClassOrSubclass(fieldValue, String.class)) {
-
-				return Stream.of(fieldWithContext);
-
 			} else {
-				return getFieldsAnnotatedBy(fieldValue, annotationType);
+				if (isOfClassOrSubclass(fieldValue, Iterable.class) && areElementsOfClassOrSubclass((Iterable) fieldValue, clazzOfTheField)) {
+
+					return Stream.of(fieldWithContext);
+
+				} else if (isOfClassOrSubclass(fieldValue, Iterable.class) && !areElementsOfClassOrSubclass((Iterable) fieldValue, clazzOfTheField)) {
+
+					Iterable<?> iterable = (Iterable) fieldValue;
+					return StreamSupport.stream(iterable.spliterator(), false)
+						.flatMap(o -> getFieldsAnnotatedBy(o, clazzOfTheField, annotationType));
+
+				} else if (isOfClassOrSubclass(fieldValue, clazzOfTheField)) {
+
+					return Stream.of(fieldWithContext);
+
+				} else {
+					return getFieldsAnnotatedBy(fieldValue, clazzOfTheField, annotationType);
+				}
 			}
 		} catch (IllegalAccessException e) {
 			throw new EncryptionException(e.getMessage(), e);
