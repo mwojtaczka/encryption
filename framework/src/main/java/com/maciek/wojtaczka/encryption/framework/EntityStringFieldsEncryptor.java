@@ -29,4 +29,22 @@ public class EntityStringFieldsEncryptor {
 			e.printStackTrace();
 		}
 	}
+
+	public void decryptObject(Object object, String keyName) {
+
+		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS)
+			.forEach(fieldWithContext -> decryptField(fieldWithContext, keyName));
+
+	}
+
+	private void decryptField(FieldWithContext field, String keyName) {
+
+		try {
+			String value = (String) field.getValue();
+			String encrypted = fieldEncryptor.decrypt(value, keyName, field.getAlgorithm());
+			field.setValue(encrypted);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
 }

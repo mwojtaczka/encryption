@@ -57,6 +57,29 @@ class EntityStringFieldsEncryptorTest {
 		);
 	}
 
+	@Test
+	void shouldEncryptAndDecryptEntityStringFields() {
+		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1)).thenReturn(test_key);
+		Entity entity = Entity.builder()
+			.sensitive1("sensitive1")
+			.sensitive2("sensitive2")
+			.build();
+
+		entityEncryptor.encryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getSensitive1()).doesNotContain("sensitive1"),
+			() -> assertThat(entity.getSensitive2()).doesNotContain("sensitive2")
+		);
+
+		entityEncryptor.decryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getSensitive1()).isEqualTo("sensitive1"),
+			() -> assertThat(entity.getSensitive2()).isEqualTo("sensitive2")
+		);
+	}
+
 	private SecretKey generateAesSecretKey() {
 		SecureRandom secureRandom = new SecureRandom();
 		byte[] key = new byte[16];
