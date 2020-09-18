@@ -121,6 +121,52 @@ class EntityStringFieldsEncryptorTest {
 		);
 	}
 
+	@Test
+	void shouldEncryptAndDecryptEntityEmbeddedEntityField() {
+		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EmbeddedEntity embeddedEntity = EmbeddedEntity.builder()
+			.sensitive("sensitive")
+			.build();
+		Entity entity = Entity.builder()
+			.embeddedEntity(embeddedEntity)
+			.build();
+
+		entityEncryptor.encryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getEmbeddedEntity().getSensitive()).doesNotContain("sensitive")
+		);
+
+		entityEncryptor.decryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getEmbeddedEntity().getSensitive()).isEqualTo("sensitive")
+		);
+	}
+
+	@Test
+	void shouldEncryptAndDecryptEntityEmbeddedEntityListField() {
+		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EmbeddedEntity embeddedEntity = EmbeddedEntity.builder()
+			.sensitive("sensitive")
+			.build();
+		Entity entity = Entity.builder()
+			.embeddedEntityList(List.of(embeddedEntity))
+			.build();
+
+		entityEncryptor.encryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getEmbeddedEntityList()).allMatch(element -> !element.getSensitive().contains("sensitive"))
+		);
+
+		entityEncryptor.decryptObject(entity, "test_key");
+		assertAll(
+			() -> assertThat(entity.getEmbeddedEntityList()).allMatch(element -> element.getSensitive().equals("sensitive"))
+		);
+	}
+
 	private SecretKey generateAesSecretKey() {
 		SecureRandom secureRandom = new SecureRandom();
 		byte[] key = new byte[16];
@@ -140,6 +186,18 @@ class EntityStringFieldsEncryptorTest {
 		List<String> sensitiveList;
 		@Encrypt
 		Set<String> sensitiveSet;
+		@Encrypt
+		EmbeddedEntity embeddedEntity;
+		@Encrypt
+		List<EmbeddedEntity> embeddedEntityList;
+	}
+
+	@Builder
+	@Value
+	private static class EmbeddedEntity {
+
+		@Encrypt
+		String sensitive;
 	}
 
 
