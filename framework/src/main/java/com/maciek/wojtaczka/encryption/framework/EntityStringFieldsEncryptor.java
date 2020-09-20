@@ -14,13 +14,21 @@ import java.util.stream.StreamSupport;
 public class EntityStringFieldsEncryptor {
 
 	private static final Class<String> STRING_CLASS = String.class;
+	private static EntityStringFieldsEncryptor instance;
 
 	private final FieldEncryptor<String> fieldEncryptor;
 	private final FieldExtractor fieldExtractor;
 
+	EntityStringFieldsEncryptor createAndInitializeStaticReference(FieldEncryptor<String> fieldEncryptor, FieldExtractor fieldExtractor) {
+		EntityStringFieldsEncryptor encryptor = new EntityStringFieldsEncryptor(fieldEncryptor, fieldExtractor);
+		instance = encryptor;
+		return encryptor;
+	}
+
 	public EntityStringFieldsEncryptor(FieldEncryptor<String> fieldEncryptor, FieldExtractor fieldExtractor) {
 		this.fieldEncryptor = fieldEncryptor;
 		this.fieldExtractor = fieldExtractor;
+		instance = this;
 	}
 
 	public void encryptObject(Object object, String keyName) {
@@ -35,13 +43,13 @@ public class EntityStringFieldsEncryptor {
 		try {
 			Object value = field.getValue();
 			if (value instanceof String) {
-				String encrypted = fieldEncryptor.encrypt((String) value, keyName, field.getAlgorithm());
+				String encrypted = fieldEncryptor.encrypt((String) value, keyName, field.getMetadata().getAlgorithm());
 				field.setValue(encrypted);
 			} else if (value instanceof Iterable) {
 				Iterable<String> iterable = (Iterable) value;
 
 				Collection<String> collect = StreamSupport.stream(iterable.spliterator(), false)
-					.map(s -> fieldEncryptor.encrypt(s, keyName, field.getAlgorithm()))
+					.map(s -> fieldEncryptor.encrypt(s, keyName, field.getMetadata().getAlgorithm()))
 					.collect(Collectors.toCollection(getCollectionFactory(value)));
 
 				field.setValue(collect);
@@ -64,7 +72,8 @@ public class EntityStringFieldsEncryptor {
 
 	public void decryptObject(Object object, String keyName) {
 
-		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS)
+		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS).stream()
+			.filter(fieldWithContext -> !fieldWithContext.getMetadata().isLazy())
 			.forEach(fieldWithContext -> decryptField(fieldWithContext, keyName));
 
 	}
@@ -74,13 +83,13 @@ public class EntityStringFieldsEncryptor {
 		try {
 			Object value = field.getValue();
 			if (value instanceof String) {
-				String encrypted = fieldEncryptor.decrypt((String) value, keyName, field.getAlgorithm());
+				String encrypted = fieldEncryptor.decrypt((String) value, keyName, field.getMetadata().getAlgorithm());
 				field.setValue(encrypted);
-			} else if (value instanceof Iterable) {
+			} else if (value instanceof List || value instanceof Set) {
 				Iterable<String> iterable = (Iterable) value;
 
 				Collection<String> collect = StreamSupport.stream(iterable.spliterator(), false)
-					.map(s -> fieldEncryptor.decrypt(s, keyName, field.getAlgorithm()))
+					.map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata().getAlgorithm()))
 					.collect(Collectors.toCollection(getCollectionFactory(value)));
 
 				field.setValue(collect);
@@ -88,5 +97,40 @@ public class EntityStringFieldsEncryptor {
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private <T> T decryptFieldValue(FieldWithContext field, String keyName) {
+
+		try {
+			Object value = field.getValue();
+			if (value instanceof String) {
+				//noinspection unchecked
+				return (T) fieldEncryptor.decrypt((String) value, keyName, field.getMetadata().getAlgorithm());
+			} else if (value instanceof List || value instanceof Set) {
+				Iterable<String> iterable = (Iterable) value; //check
+
+				//noinspection unchecked
+				return (T) StreamSupport.stream(iterable.spliterator(), false)
+					.map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata().getAlgorithm()))
+					.collect(Collectors.toCollection(getCollectionFactory(value)));
+
+			} else {
+				throw new EncryptionException("Unsupported type for decryption");
+			}
+		} catch (IllegalAccessException e) {
+			throw new EncryptionException("");
+		}
+
+	}
+
+	public static  <T> T decryptLazily(Object t, String fieldName,  String keyName) {
+		FieldWithContext fieldByName;
+		try {
+			fieldByName = instance.fieldExtractor.getFieldByName(t, fieldName);
+		} catch (NoSuchFieldException e) {
+			throw new EncryptionException("No such field found", e);
+		}
+
+		return instance.decryptFieldValue(fieldByName, keyName);
 	}
 }

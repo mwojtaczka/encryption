@@ -1,19 +1,23 @@
 package com.maciek.wojtaczka.encryption.framework;
 
-import lombok.Data;
+import com.maciek.wojtaczka.encryption.framework.annotation.Encrypt;
+import lombok.Builder;
+import lombok.Value;
 
 import java.lang.reflect.Field;
 
-@Data
 class FieldWithContext {
+
+	private static final Class<Encrypt> TO_ENCRYPT = Encrypt.class;
+
+
 	private final Field field;
 	private final Object context;
-	private final String algorithm;
+	private Metadata metadata;
 
-	FieldWithContext(Field field, Object context, String algorithm) {
+	FieldWithContext(Field field, Object context) {
 		this.field = field;
 		this.context = context;
-		this.algorithm = algorithm;
 	}
 
 	Object getValue() throws IllegalAccessException {
@@ -26,7 +30,22 @@ class FieldWithContext {
 		this.field.set(this.context, value);
 	}
 
-	String getAlgorithm() {
-		return "AES/GCM/NoPadding";
+	Metadata getMetadata() {
+		if (metadata == null) {
+			Encrypt annotation = field.getDeclaredAnnotation(TO_ENCRYPT);
+			this.metadata = Metadata.builder()
+				.lazy(Boolean.parseBoolean(annotation.lazy()))
+				.algorithm(annotation.algorithm())
+				.build();
+		}
+		return metadata;
 	}
+
+	@Builder
+	@Value
+	static class Metadata {
+		boolean lazy;
+		String algorithm;
+	}
+
 }

@@ -27,7 +27,7 @@ class FieldExtractor {
 	private Stream<? extends FieldWithContext> getFieldsAnnotatedBy(Object entity, Class<?> clazzOfTheField, Class<? extends Annotation>... annotationType) {
 		return stream(entity.getClass().getDeclaredFields())
 			.filter(field -> isFieldAnnotatedBy(field, annotationType))
-			.map(field -> new FieldWithContext(field, entity, null))
+			.map(field -> new FieldWithContext(field, entity))
 			.flatMap(fieldWithContext -> recursivelyGetAllStringFieldsAnnotatedBy(fieldWithContext, clazzOfTheField, annotationType));
 	}
 
@@ -87,4 +87,8 @@ class FieldExtractor {
 			.collect(Collectors.toSet());
 	}
 
+	public FieldWithContext getFieldByName(Object o, String fieldName) throws NoSuchFieldException {
+		Field declaredField = o.getClass().getDeclaredField(fieldName);
+		return new FieldWithContext(declaredField, o);
+	}
 }

@@ -8,4 +8,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Encrypt {
+
+	String lazy() default "false";
+
+	String algorithm() default "AES/GCM/NoPadding";
 }
