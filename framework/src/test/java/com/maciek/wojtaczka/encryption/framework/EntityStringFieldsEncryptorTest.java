@@ -41,7 +41,7 @@ class EntityStringFieldsEncryptorTest {
 		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(aesGcmNoPaddingMechanism), keyProvider);
 		FieldEncryptor<String> stringEncryptor = new StringEncryptor(encryptionFacade);
 		FieldExtractor fieldExtractor = new FieldExtractor();
-		entityEncryptor = new EntityStringFieldsEncryptor(stringEncryptor, fieldExtractor);
+		entityEncryptor = new EntityStringFieldsEncryptor(stringEncryptor, fieldExtractor, keyNameResolver);
 	}
 
 	@Test

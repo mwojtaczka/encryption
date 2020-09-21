@@ -18,17 +18,25 @@ public class EntityStringFieldsEncryptor {
 
 	private final FieldEncryptor<String> fieldEncryptor;
 	private final FieldExtractor fieldExtractor;
+	private final KeyNameResolver keyNameResolver;
 
 	EntityStringFieldsEncryptor createAndInitializeStaticReference(FieldEncryptor<String> fieldEncryptor, FieldExtractor fieldExtractor) {
-		EntityStringFieldsEncryptor encryptor = new EntityStringFieldsEncryptor(fieldEncryptor, fieldExtractor);
+		EntityStringFieldsEncryptor encryptor = new EntityStringFieldsEncryptor(fieldEncryptor, fieldExtractor, keyNameResolver);
 		instance = encryptor;
 		return encryptor;
 	}
 
-	public EntityStringFieldsEncryptor(FieldEncryptor<String> fieldEncryptor, FieldExtractor fieldExtractor) {
+	public EntityStringFieldsEncryptor(FieldEncryptor<String> fieldEncryptor, FieldExtractor fieldExtractor, KeyNameResolver keyNameResolver) {
 		this.fieldEncryptor = fieldEncryptor;
 		this.fieldExtractor = fieldExtractor;
+		this.keyNameResolver = keyNameResolver;
 		instance = this;
+	}
+
+	public void encryptObject(Object object) {
+
+		String keyName = keyNameResolver.resolveKeyName(object);
+		this.encryptObject(object, keyName);
 	}
 
 	public void encryptObject(Object object, String keyName) {
@@ -69,6 +77,12 @@ public class EntityStringFieldsEncryptor {
 		}
 	}
 
+
+	public void decryptObject(Object object) {
+
+		String keyName = keyNameResolver.resolveKeyName(object);
+		this.decryptObject(object, keyName);
+	}
 
 	public void decryptObject(Object object, String keyName) {
 
