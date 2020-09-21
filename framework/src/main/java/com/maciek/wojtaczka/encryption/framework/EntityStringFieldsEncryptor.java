@@ -138,6 +138,9 @@ public class EntityStringFieldsEncryptor {
 	}
 
 	public static  <T> T decryptLazily(Object t, String fieldName,  String keyName) {
+		if (instance == null) {
+			throw new EncryptionException("Encryptor has not been initialized. Consider create at lest one instance of EntityStringFieldsEncryptor class");
+		}
 		FieldWithContext fieldByName;
 		try {
 			fieldByName = instance.fieldExtractor.getFieldByName(t, fieldName);

@@ -33,6 +33,9 @@ class EntityStringFieldsEncryptorTest {
 	@Mock
 	private EncryptionKeyProvider keyProvider;
 
+	@Mock
+	KeyNameResolver keyNameResolver;
+
 	private EntityStringFieldsEncryptor entityEncryptor;
 
 	@BeforeEach
