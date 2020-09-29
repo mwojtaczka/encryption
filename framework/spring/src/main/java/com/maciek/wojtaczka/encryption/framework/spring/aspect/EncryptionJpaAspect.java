@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
 import java.util.List;
+import java.util.Optional;
 
 @Aspect
 public class EncryptionJpaAspect {
@@ -53,5 +54,52 @@ public class EncryptionJpaAspect {
 		}
 
 		return savedEntities;
+	}
+
+	@Pointcut("execution(* *..findById(*))")
+	public void findById() {}
+
+	@Pointcut("execution(* *..findOne(*))")
+	public void findOne() {}
+
+	@Around("jpaRepository() && (findById() || findOne())")
+	public <S> Optional<S> findOneProxy(ProceedingJoinPoint joinPoint) throws Throwable {
+
+		Optional<S> optionalEntity = (Optional<S>) joinPoint.proceed();
+		optionalEntity.ifPresent(encryptor::decryptObject);
+
+		return optionalEntity;
+	}
+
+	@Pointcut("execution(* *..findAll())")
+	public void findAll() {}
+
+	@Around("jpaRepository() && findAll()")
+	public <S> List<S> findAllProxy(ProceedingJoinPoint joinPoint) throws Throwable {
+
+		List<S> list = (List<S>) joinPoint.proceed();
+		list.forEach(encryptor::decryptObject);
+
+		return list;
+	}
+
+	@Pointcut("execution(* *..findBy*(*))")
+	public void findByGeneric() {}
+
+	@Around("jpaRepository() && findByGeneric() && !(findAll() || findById() || findOne())")
+	public <T, S> T findByGenericProxy(ProceedingJoinPoint joinPoint) throws Throwable {
+
+		Object result = joinPoint.proceed();
+		if (result instanceof Optional) {
+			Optional<S> optionalEntity = (Optional<S>) result;
+			optionalEntity.ifPresent(encryptor::decryptObject);
+
+			return (T) optionalEntity;
+		} else {
+			Iterable<S> iterable = (Iterable<S>) result;
+			iterable.forEach(encryptor::decryptObject);
+
+			return (T) iterable;
+		}
 	}
 }

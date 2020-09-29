@@ -20,13 +20,6 @@ public class PersonRepositoryService {
 		this.personMapper = personMapper;
 	}
 
-	public List<Person> findAll() {
-
-		return personRepository.findAll().stream()
-			.map(personMapper::toModel)
-			.collect(Collectors.toList());
-	}
-
 	public Person save(Person person) {
 		PersonEntity personEntity = personMapper.toEntity(person);
 		PersonEntity saved = personRepository.save(personEntity);
@@ -46,10 +39,29 @@ public class PersonRepositoryService {
 				.collect(Collectors.toList());
 	}
 
-	public Optional<Person> FindById(long id) {
+	public Optional<Person> findById(long id) {
 
 		return personRepository.findById(id)
 			.map(personMapper::toModel);
+	}
+
+	public List<Person> findAll() {
+
+		return personRepository.findAll().stream()
+							   .map(personMapper::toModel)
+							   .collect(Collectors.toList());
+	}
+
+	public List<Person> findByName(String name) {
+
+		return personRepository.findByName(name).stream()
+							   .map(personMapper::toModel)
+							   .collect(Collectors.toList());
+	}
+
+	public Optional<Person> findByNickname(String nickname) {
+		return personRepository.findByNickname(nickname)
+							   .map(personMapper::toModel);
 	}
 
 

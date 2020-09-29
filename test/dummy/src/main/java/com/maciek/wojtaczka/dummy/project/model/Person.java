@@ -10,5 +10,6 @@ public class Person {
 	Long id;
 	String name;
 	String surname;
+	String nickname;
 
 }

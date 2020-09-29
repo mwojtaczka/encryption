@@ -92,5 +92,87 @@ class PersonRepositoryServiceTest {
 		assertThat(surnameColumnValue2).doesNotContain("Doe", "Smith");
 	}
 
+	@Test
+	void shouldDecryptSurname_whenFindById() {
+		//given
+		Person person = Person.builder()
+							  .name("John")
+							  .surname("Doe")
+							  .build();
+		Person saved = repositoryService.save(person);
+
+		//when
+		Person found = repositoryService.findById(saved.getId())
+										  .get();
+
+		//then
+		assertThat(found.getSurname()).isEqualTo("Doe");
+	}
+
+	//TODO: create case with findOne()
+
+	@Test
+	void shouldDecryptSurname_whenFindAll() {
+		//given
+		Person person1 = Person.builder()
+							   .name("John")
+							   .surname("Doe")
+							   .build();
+		Person person2 = Person.builder()
+							   .name("John")
+							   .surname("Smith")
+							   .build();
+		repositoryService.saveAll(Set.of(person1, person2));
+
+		//when
+		List<Person> all = repositoryService.findAll();
+		Person found1 = all.get(0);
+		Person found2 = all.get(1);
+
+		//then
+		assertThat(found1.getSurname()).isIn("Doe", "Smith");
+		assertThat(found2.getSurname()).isIn("Doe", "Smith");
+	}
+
+	@Test
+	void shouldDecryptSurname_whenFindByName() {
+		//given
+		Person person1 = Person.builder()
+							   .name("John")
+							   .surname("Doe")
+							   .build();
+		Person person2 = Person.builder()
+							   .name("John")
+							   .surname("Smith")
+							   .build();
+		repositoryService.saveAll(Set.of(person1, person2));
+
+		//when
+		List<Person> all = repositoryService.findByName("John");
+		Person found1 = all.get(0);
+		Person found2 = all.get(1);
+
+		//then
+		assertThat(found1.getSurname()).isIn("Doe", "Smith");
+		assertThat(found2.getSurname()).isIn("Doe", "Smith");
+	}
+
+	@Test
+	void shouldDecryptSurname_whenFindByUniqueNickname() {
+		//given
+		Person person = Person.builder()
+							  .name("John")
+							  .surname("Doe")
+							  .nickname("Fat")
+							  .build();
+		repositoryService.save(person);
+
+		//when
+		Person found = repositoryService.findByNickname("Fat")
+										.get();
+
+		//then
+		assertThat(found.getSurname()).isEqualTo("Doe");
+	}
 
 }

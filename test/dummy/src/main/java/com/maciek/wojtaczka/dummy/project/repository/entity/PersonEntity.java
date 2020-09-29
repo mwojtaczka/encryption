@@ -1,15 +1,20 @@
 package com.maciek.wojtaczka.dummy.project.repository.entity;
 
 import com.maciek.wojtaczka.encryption.framework.base.annotation.Encrypt;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "Person")
@@ -21,5 +26,7 @@ public class PersonEntity {
 	String name;
 	@Encrypt
 	String surname;
+	@Column(unique = true)
+	String nickname;
 
 }
