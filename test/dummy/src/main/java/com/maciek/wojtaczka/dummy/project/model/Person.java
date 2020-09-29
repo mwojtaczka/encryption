@@ -7,8 +7,8 @@ import lombok.Value;
 @Value
 public class Person {
 
-	private Long id;
-	private String name;
-	private String surname;
+	Long id;
+	String name;
+	String surname;
 
 }
