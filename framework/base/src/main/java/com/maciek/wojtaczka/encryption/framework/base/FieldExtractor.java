@@ -87,8 +87,8 @@ class FieldExtractor {
 			.collect(Collectors.toSet());
 	}
 
-	public FieldWithContext getFieldByName(Object o, String fieldName) throws NoSuchFieldException {
-		Field declaredField = o.getClass().getDeclaredField(fieldName);
-		return new FieldWithContext(declaredField, o);
+	public FieldWithContext getFieldByName(Object entity, String fieldName) throws NoSuchFieldException {
+		Field declaredField = entity.getClass().getDeclaredField(fieldName);
+		return new FieldWithContext(declaredField, entity);
 	}
 }

@@ -5,6 +5,7 @@ import com.maciek.wojtaczka.encryption.core.CipherMechanism;
 import com.maciek.wojtaczka.encryption.core.EncryptionFacade;
 import com.maciek.wojtaczka.encryption.core.EncryptionKey;
 import com.maciek.wojtaczka.encryption.core.EncryptionKeyProvider;
+import com.maciek.wojtaczka.encryption.framework.base.EntityEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.EntityStringFieldsEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.FieldEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.KeyNameResolver;
@@ -22,12 +23,12 @@ import java.util.Set;
 public class EncryptionConfiguration {
 
 	@Bean
-	public EncryptionJpaAspect encryptionJpaAspect(EntityStringFieldsEncryptor encryptor) {
+	public EncryptionJpaAspect encryptionJpaAspect(EntityEncryptor encryptor) {
 		return new EncryptionJpaAspect(encryptor);
 	}
 
 	@Bean
-	public EntityStringFieldsEncryptor encryptor() {
+	public EntityEncryptor<String> encryptor() {
 		CipherMechanism cipherMechanism = new AesGcmNoPaddingMechanism();
 		EncryptionKeyProvider encryptionKeyProvider = new StaticKeyProvider();
 		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(cipherMechanism), encryptionKeyProvider);

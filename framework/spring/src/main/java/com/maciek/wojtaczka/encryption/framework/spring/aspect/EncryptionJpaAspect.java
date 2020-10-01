@@ -1,6 +1,6 @@
 package com.maciek.wojtaczka.encryption.framework.spring.aspect;
 
-import com.maciek.wojtaczka.encryption.framework.base.EntityStringFieldsEncryptor;
+import com.maciek.wojtaczka.encryption.framework.base.EntityEncryptor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,9 +12,9 @@ import java.util.Optional;
 @Aspect
 public class EncryptionJpaAspect {
 
-	private final EntityStringFieldsEncryptor encryptor;
+	private final EntityEncryptor encryptor;
 
-	public EncryptionJpaAspect(EntityStringFieldsEncryptor encryptor) {
+	public EncryptionJpaAspect(EntityEncryptor encryptor) {
 		this.encryptor = encryptor;
 	}
 

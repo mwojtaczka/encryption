@@ -21,7 +21,6 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Set;
 
-import static com.maciek.wojtaczka.encryption.framework.base.EntityStringFieldsEncryptor.decryptLazily;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -36,14 +35,13 @@ class EntityStringFieldsEncryptorTest {
 	@Mock
 	KeyNameResolver keyNameResolver;
 
-	private EntityStringFieldsEncryptor entityEncryptor;
+	private EntityEncryptor<String> entityEncryptor;
 
 	@BeforeEach
 	void setup() {
 		CipherMechanism aesGcmNoPaddingMechanism = new AesGcmNoPaddingMechanism();
 		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(aesGcmNoPaddingMechanism), keyProvider);
 		FieldEncryptor<String> stringEncryptor = new StringEncryptor(encryptionFacade);
-		FieldExtractor fieldExtractor = new FieldExtractor();
 		entityEncryptor = new EntityStringFieldsEncryptor(stringEncryptor, keyNameResolver);
 	}
 
@@ -218,15 +216,30 @@ class EntityStringFieldsEncryptorTest {
 		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
 		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
 		Entity entity = Entity.builder()
-			.lazySensitiveList(List.of("sensitive"))
-			.build();
+							  .lazySensitiveList(List.of("sensitive"))
+							  .build();
 
 		entityEncryptor.encryptObject(entity, "test_key");
 		assertThat(entity.getLazySensitiveList()).doesNotContain("sensitive");
 
 		List<String> decryptedLazySensitiveList = entity.getDecryptedLazySensitiveList();
-		entity.getDecryptedLazySensitiveList();
 		assertThat(decryptedLazySensitiveList).containsExactly("sensitive");
+	}
+
+	@Test
+	void shouldEncryptAndDecryptLazySetField() {
+		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		Entity entity = Entity.builder()
+							  .lazySensitiveSet(Set.of("sensitive"))
+							  .build();
+
+		entityEncryptor.encryptObject(entity, "test_key");
+		assertThat(entity.getLazySensitiveSet()).doesNotContain("sensitive");
+
+		Set<String> decryptedLazySensitiveSet = entity.getDecryptedLazySensitiveSet();
+		assertThat(decryptedLazySensitiveSet).containsExactly("sensitive");
 	}
 
 	@Test
@@ -271,17 +284,23 @@ class EntityStringFieldsEncryptorTest {
 		String lazySensitive;
 		@Encrypt(lazy = true)
 		List<String> lazySensitiveList;
+		@Encrypt(lazy = true)
+		Set<String> lazySensitiveSet;
 
 		String getDecryptedLazySensitive() {
-			return decryptLazily(this, "lazySensitive", "test_key");
+			return StaticDecryptor.decryptField(this, "lazySensitive", "test_key");
 		}
 
 		String getDecryptedLazySensitiveWrongFieldName() {
-			return decryptLazily(this, "wrongName", "test_key");
+			return StaticDecryptor.decryptField(this, "wrongName", "test_key");
 		}
 
 		List<String> getDecryptedLazySensitiveList() {
-			return decryptLazily(this, "lazySensitiveList", "test_key");
+			return StaticDecryptor.decryptListField(this, "lazySensitiveList", "test_key");
+		}
+
+		Set<String> getDecryptedLazySensitiveSet() {
+			return StaticDecryptor.decryptSetField(this, "lazySensitiveSet", "test_key");
 		}
 
 	}

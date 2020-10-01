@@ -11,10 +11,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class EntityStringFieldsEncryptor {
+public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<String> {
 
 	private static final Class<String> STRING_CLASS = String.class;
-	private static EntityStringFieldsEncryptor instance;
 
 	private final FieldEncryptor<String> fieldEncryptor;
 	private final FieldExtractor fieldExtractor;
@@ -24,15 +23,16 @@ public class EntityStringFieldsEncryptor {
 		this.fieldEncryptor = fieldEncryptor;
 		this.fieldExtractor = new FieldExtractor();
 		this.keyNameResolver = keyNameResolver;
-		instance = this;
 	}
 
+	@Override
 	public void encryptObject(Object object) {
 
 		String keyName = keyNameResolver.resolveKeyName(object);
 		this.encryptObject(object, keyName);
 	}
 
+	@Override
 	public void encryptObject(Object object, String keyName) {
 
 		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS)
@@ -72,12 +72,14 @@ public class EntityStringFieldsEncryptor {
 	}
 
 
+	@Override
 	public void decryptObject(Object object) {
 
 		String keyName = keyNameResolver.resolveKeyName(object);
 		this.decryptObject(object, keyName);
 	}
 
+	@Override
 	public void decryptObject(Object object, String keyName) {
 
 		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS).stream()
@@ -131,17 +133,40 @@ public class EntityStringFieldsEncryptor {
 
 	}
 
-	public static  <T> T decryptLazily(Object t, String fieldName,  String keyName) {
-		if (instance == null) {
-			throw new EncryptionException("Encryptor has not been initialized. Consider create at lest one instance of EntityStringFieldsEncryptor class");
-		}
+	@Override
+	String decryptFieldLazily(Object entity, String fieldName,  String keyName) {
+
 		FieldWithContext fieldByName;
 		try {
-			fieldByName = instance.fieldExtractor.getFieldByName(t, fieldName);
+			fieldByName = fieldExtractor.getFieldByName(entity, fieldName);
 		} catch (NoSuchFieldException e) {
 			throw new EncryptionException("No such field found", e);
 		}
 
-		return instance.decryptFieldValue(fieldByName, keyName);
+		return decryptFieldValue(fieldByName, keyName);
+	}
+
+	@Override
+	List<String> decryptListFieldLazily(Object entity, String fieldName, String keyName) {
+		FieldWithContext fieldByName;
+		try {
+			fieldByName = fieldExtractor.getFieldByName(entity, fieldName);
+		} catch (NoSuchFieldException e) {
+			throw new EncryptionException("No such field found", e);
+		}
+
+		return decryptFieldValue(fieldByName, keyName);
+	}
+
+	@Override
+	Set<String> decryptSetFieldLazily(Object entity, String fieldName, String keyName) {
+		FieldWithContext fieldByName;
+		try {
+			fieldByName = fieldExtractor.getFieldByName(entity, fieldName);
+		} catch (NoSuchFieldException e) {
+			throw new EncryptionException("No such field found", e);
+		}
+
+		return decryptFieldValue(fieldByName, keyName);
 	}
 }
