@@ -6,13 +6,15 @@ import java.util.Set;
 
 public abstract class AbstractLazyEntityEncryptor<T> implements EntityEncryptor<T> {
 
+	private final Class<T> actualType;
+
 	public AbstractLazyEntityEncryptor() {
-		Class<T> actualTypeArgument = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-		StaticDecryptor.initialize(this, actualTypeArgument);
+		actualType = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+		StaticDecryptor.initialize(this);
 	}
 
-	<E> Class<E> getType() {
-		return null;
+	Class<T> getType() {
+		return actualType;
 	}
 
 	abstract T decryptFieldLazily(Object entity, String fieldName, String keyName);
