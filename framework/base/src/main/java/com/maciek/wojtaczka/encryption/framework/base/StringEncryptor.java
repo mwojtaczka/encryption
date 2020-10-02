@@ -43,6 +43,14 @@ public class StringEncryptor implements FieldEncryptor<String> {
 		return deserializeContentToString(bytes);
 	}
 
+	@Override
+	public String hash(String content, String keyName, String algorithm) {
+		byte[] bytes = serializeContentString(content);
+		CipherRecord cipherRecord = encryptionFacade.encryptBytes(bytes, keyName, algorithm);
+
+		return deserializeContentToString(cipherRecord.getCipherContent());
+	}
+
 	private String deserializeContentToString(byte[] contentBytes) {
 		return new String(contentBytes, CHARSET_FOR_CONTENT_SERIALIZATION);
 	}

@@ -39,7 +39,7 @@ public class EncryptionConfiguration {
 
 	static class StaticKeyNameResolver implements KeyNameResolver {
 		@Override
-		public String resolveKeyName(Object entity) {
+		public String resolveEncryptionKeyName(Object entity) {
 			return "encryption-key";
 		}
 	}

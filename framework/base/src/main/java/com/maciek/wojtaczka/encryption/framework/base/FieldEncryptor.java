@@ -5,4 +5,6 @@ public interface FieldEncryptor <C> {
 	C encrypt(C c, String keyName, String algorithm);
 
 	C decrypt(C c, String keyName, String algorithm);
+
+	C hash(C c, String keyName, String algorithm);
 }

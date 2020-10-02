@@ -5,6 +5,7 @@ import com.maciek.wojtaczka.encryption.core.CipherMechanism;
 import com.maciek.wojtaczka.encryption.core.EncryptionFacade;
 import com.maciek.wojtaczka.encryption.core.EncryptionKey;
 import com.maciek.wojtaczka.encryption.core.EncryptionKeyProvider;
+import com.maciek.wojtaczka.encryption.core.HmacSha256Mechanism;
 import com.maciek.wojtaczka.encryption.core.exception.EncryptionException;
 import com.maciek.wojtaczka.encryption.framework.base.annotation.Encrypt;
 import lombok.Builder;
@@ -40,7 +41,8 @@ class EntityStringFieldsEncryptorTest {
 	@BeforeEach
 	void setup() {
 		CipherMechanism aesGcmNoPaddingMechanism = new AesGcmNoPaddingMechanism();
-		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(aesGcmNoPaddingMechanism), keyProvider);
+		CipherMechanism hmacShaMechanism = new HmacSha256Mechanism();
+		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(aesGcmNoPaddingMechanism, hmacShaMechanism), keyProvider);
 		FieldEncryptor<String> stringEncryptor = new StringEncryptor(encryptionFacade);
 		entityEncryptor = new EntityStringFieldsEncryptor(stringEncryptor, keyNameResolver);
 	}
@@ -251,10 +253,22 @@ class EntityStringFieldsEncryptorTest {
 			.build();
 
 		entityEncryptor.encryptObject(entity, "test_key");
-		assertThat(entity.getLazySensitive()).doesNotContain("sensitive");
-
 		EncryptionException thrown = catchThrowableOfType(entity::getDecryptedLazySensitiveWrongFieldName, EncryptionException.class);
+
 		assertThat(thrown).hasMessage("No such field found");
+	}
+
+	@Test
+	void shouldFillBlindIdField() {
+		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		when(keyProvider.getLatestKey("test_key", "HmacSHA256")).thenReturn(test_key);
+		Entity entity = Entity.builder()
+							  .searchableSensitive("sensitive")
+							  .build();
+
+		entityEncryptor.encryptObject(entity, "test_key");
+		assertThat(entity.getSearchableSensitiveBlindId()).isNotBlank();
 	}
 
 	private SecretKey generateAesSecretKey() {
@@ -286,6 +300,9 @@ class EntityStringFieldsEncryptorTest {
 		List<String> lazySensitiveList;
 		@Encrypt(lazy = true)
 		Set<String> lazySensitiveSet;
+		@Encrypt(searchable = true)
+		String searchableSensitive;
+		String searchableSensitiveBlindId;
 
 		String getDecryptedLazySensitive() {
 			return StaticDecryptor.decryptField(this, "lazySensitive", "test_key");

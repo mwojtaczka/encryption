@@ -1,7 +1,11 @@
 package com.maciek.wojtaczka.encryption.framework.base;
 
-@FunctionalInterface
 public interface KeyNameResolver {
 
-	String resolveKeyName(Object entity);
+	String resolveEncryptionKeyName(Object entity);
+
+	default String resolveBlindIdKeyName(Object entity) {
+		return resolveEncryptionKeyName(entity);
+	}
+
 }

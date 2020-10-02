@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 class FieldWithContext {
 
 	private static final Class<Encrypt> TO_ENCRYPT = Encrypt.class;
+	private static final String BLIND_ID = "BlindId";
 
 
 	private final Field field;
@@ -30,13 +31,27 @@ class FieldWithContext {
 		this.field.set(this.context, value);
 	}
 
+	void setBlindId(Object value) throws IllegalAccessException, NoSuchFieldException {
+		Field blindIdField = context.getClass()
+									 .getDeclaredField(field.getName() + BLIND_ID);
+		blindIdField.setAccessible(true);
+		blindIdField.set(this.context, value);
+	}
+
+	boolean isSearchable() {
+		return getMetadata().isSearchable();
+	}
+
 	Metadata getMetadata() {
 		if (metadata == null) {
 			Encrypt annotation = field.getDeclaredAnnotation(TO_ENCRYPT);
 			this.metadata = Metadata.builder()
-				.lazy(annotation.lazy())
-				.algorithm(annotation.algorithm())
-				.build();
+									.lazy(annotation.lazy())
+									.algorithm(annotation.algorithm())
+									.searchable(annotation.searchable())
+									.blindIdFieldName(field.getName() + BLIND_ID)
+									.blindIdAlgorithm(annotation.blindIdAlgorithm())
+									.build();
 		}
 		return metadata;
 	}
@@ -46,6 +61,9 @@ class FieldWithContext {
 	static class Metadata {
 		boolean lazy;
 		String algorithm;
+		boolean searchable;
+		String blindIdFieldName;
+		String blindIdAlgorithm;
 	}
 
 }

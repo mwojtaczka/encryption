@@ -28,36 +28,51 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 	@Override
 	public void encryptObject(Object object) {
 
-		String keyName = keyNameResolver.resolveKeyName(object);
-		this.encryptObject(object, keyName);
+		String keyName = keyNameResolver.resolveEncryptionKeyName(object);
+		String keyBlindIdName = keyNameResolver.resolveBlindIdKeyName(object);
+		this.encryptObject(object, keyName, keyBlindIdName);
 	}
 
 	@Override
 	public void encryptObject(Object object, String keyName) {
 
 		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS)
-			.forEach(fieldWithContext -> encryptField(fieldWithContext, keyName));
-
+					  .forEach(fieldWithContext -> processFieldEncryption(fieldWithContext, keyName, keyName));
 	}
 
-	private void encryptField(FieldWithContext field, String keyName) {
+	@Override
+	public void encryptObject(Object object, String keyName, String keyBlindId) {
 
+		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS)
+					  .forEach(fieldWithContext -> processFieldEncryption(fieldWithContext, keyName, keyBlindId));
+	}
+
+
+	private void processFieldEncryption(FieldWithContext field, String keyName, String keyBlindIdName) {
+
+		FieldWithContext.Metadata fieldMetadata = field.getMetadata();
 		try {
 			Object value = field.getValue();
 			if (value instanceof String) {
-				String encrypted = fieldEncryptor.encrypt((String) value, keyName, field.getMetadata().getAlgorithm());
+				if (field.isSearchable()) {
+					String blindId = fieldEncryptor.hash((String) value, keyBlindIdName, fieldMetadata.getBlindIdAlgorithm());
+					field.setBlindId(blindId);
+				}
+				String encrypted = fieldEncryptor.encrypt((String) value, keyName, fieldMetadata.getAlgorithm());
 				field.setValue(encrypted);
 			} else if (value instanceof Iterable) {
-				Iterable<String> iterable = (Iterable) value;
+				Iterable<String> iterable = (Iterable<String>) value;
 
 				Collection<String> collect = StreamSupport.stream(iterable.spliterator(), false)
-					.map(s -> fieldEncryptor.encrypt(s, keyName, field.getMetadata().getAlgorithm()))
+					.map(s -> fieldEncryptor.encrypt(s, keyName, fieldMetadata.getAlgorithm()))
 					.collect(Collectors.toCollection(getCollectionFactory(value)));
 
 				field.setValue(collect);
 			}
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			throw new EncryptionException("BlindId field not found. Consider define field: " + fieldMetadata.getBlindIdFieldName());
 		}
 	}
 
@@ -75,7 +90,7 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 	@Override
 	public void decryptObject(Object object) {
 
-		String keyName = keyNameResolver.resolveKeyName(object);
+		String keyName = keyNameResolver.resolveEncryptionKeyName(object);
 		this.decryptObject(object, keyName);
 	}
 

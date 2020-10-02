@@ -12,4 +12,8 @@ public @interface Encrypt {
 	boolean lazy() default false;
 
 	String algorithm() default "AES/GCM/NoPadding";
+
+	boolean searchable() default false;
+
+	String blindIdAlgorithm() default "HmacSHA256";
 }
