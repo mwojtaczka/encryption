@@ -27,7 +27,7 @@ public class PersonRepositoryService {
 		return personMapper.toModel(saved);
 	}
 
-	public List<Person> saveAll(Set<Person> people) {
+	public List<Person> saveAll(List<Person> people) {
 		Set<PersonEntity> personEntities = people.stream()
 										  .map(personMapper::toEntity)
 										  .collect(Collectors.toSet());
@@ -37,6 +37,10 @@ public class PersonRepositoryService {
 		return savedEntities.stream()
 				.map(personMapper::toModel)
 				.collect(Collectors.toList());
+	}
+
+	public void deleteAll() {
+		personRepository.deleteAll();
 	}
 
 	public Optional<Person> findById(long id) {
@@ -59,11 +63,49 @@ public class PersonRepositoryService {
 							   .collect(Collectors.toList());
 	}
 
+	public List<Person> findBySurname(String surname) {
+
+		return personRepository.findBySurnameBlindId(surname).stream()
+							   .map(personMapper::toModel)
+							   .collect(Collectors.toList());
+	}
+
 	public Optional<Person> findByNickname(String nickname) {
 		return personRepository.findByNickname(nickname)
 							   .map(personMapper::toModel);
 	}
 
+	public List<Person> findByNameAndSurname(String name, String surname) {
+
+		return personRepository.findByNameAndSurnameBlindId(name, surname).stream()
+							   .map(personMapper::toModel)
+							   .collect(Collectors.toList());
+	}
+
+	public List<Person> findByNameAndSurnameAndMaritalStatus(String name, String surname, String maritalStatus) {
+
+		return personRepository.findByNameAndSurnameBlindIdAndMaritalStatusBlindId(name, surname, maritalStatus).stream()
+							   .map(personMapper::toModel)
+							   .collect(Collectors.toList());
+	}
+
+	public List<Person> findByCustom(String name, String surname, String maritalStatus) {
+
+		return personRepository.findCustom(name, surname, maritalStatus).stream()
+							   .map(personMapper::toModel)
+							   .collect(Collectors.toList());
+	}
+
+	public List<Person> findBySurnameInList(List<String> surnames) {
+
+		return personRepository.findBySurnameBlindIdIn(surnames).stream()
+							   .map(personMapper::toModel)
+							   .collect(Collectors.toList());
+	}
+
+	public int countBySurname(String surname) {
+		return personRepository.countBySurnameBlindId(surname);
+	}
 
 
 }

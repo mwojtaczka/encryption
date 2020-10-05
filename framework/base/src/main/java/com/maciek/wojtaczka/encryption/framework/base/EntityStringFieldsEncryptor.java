@@ -29,7 +29,7 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 	public void encryptObject(Object object) {
 
 		String keyName = keyNameResolver.resolveEncryptionKeyName(object);
-		String keyBlindIdName = keyNameResolver.resolveBlindIdKeyName(object);
+		String keyBlindIdName = keyNameResolver.resolveBlindIdKeyName();
 		this.encryptObject(object, keyName, keyBlindIdName);
 	}
 

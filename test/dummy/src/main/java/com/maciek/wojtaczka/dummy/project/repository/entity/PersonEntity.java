@@ -24,9 +24,13 @@ public class PersonEntity {
 	@GeneratedValue
 	Long id;
 	String name;
-	@Encrypt
+	@Encrypt(searchable = true)
 	String surname;
+	String surnameBlindId;
 	@Column(unique = true)
 	String nickname;
+	@Encrypt(searchable = true)
+	String maritalStatus;
+	String maritalStatusBlindId;
 
 }

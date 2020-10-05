@@ -50,7 +50,6 @@ class FieldWithContext {
 									.algorithm(annotation.algorithm())
 									.searchable(annotation.searchable())
 									.blindIdFieldName(field.getName() + BLIND_ID)
-									.blindIdAlgorithm(annotation.blindIdAlgorithm())
 									.build();
 		}
 		return metadata;

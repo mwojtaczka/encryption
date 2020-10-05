@@ -1,6 +1,7 @@
 package com.maciek.wojtaczka.dummy.project.repository;
 
 import com.maciek.wojtaczka.dummy.project.model.Person;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,6 +22,11 @@ class PersonRepositoryServiceTest {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+
+	@AfterEach
+	void cleanup() {
+		repositoryService.deleteAll();
+	}
 
 	@Test
 	void shouldEncryptSurnameColumn_whenEntitySaved() {
@@ -77,7 +82,7 @@ class PersonRepositoryServiceTest {
 							   .build();
 
 		//when
-		List<Person> saved = repositoryService.saveAll(Set.of(person1, person2));
+		List<Person> saved = repositoryService.saveAll(List.of(person1, person2));
 		Person saved1 = saved.get(0);
 		Person saved2 = saved.get(1);
 		Object[] args1 = { saved1.getId() };
@@ -122,7 +127,7 @@ class PersonRepositoryServiceTest {
 							   .name("John")
 							   .surname("Smith")
 							   .build();
-		repositoryService.saveAll(Set.of(person1, person2));
+		repositoryService.saveAll(List.of(person1, person2));
 
 		//when
 		List<Person> all = repositoryService.findAll();
@@ -145,7 +150,7 @@ class PersonRepositoryServiceTest {
 							   .name("John")
 							   .surname("Smith")
 							   .build();
-		repositoryService.saveAll(Set.of(person1, person2));
+		repositoryService.saveAll(List.of(person1, person2));
 
 		//when
 		List<Person> all = repositoryService.findByName("John");

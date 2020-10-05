@@ -17,8 +17,6 @@ public abstract class AbstractLazyEntityEncryptor<T> implements EntityEncryptor<
 		return actualType;
 	}
 
-	public abstract void encryptObject(Object object, String keyName, String keyBlindId);
-
 	abstract T decryptFieldLazily(Object entity, String fieldName, String keyName);
 
 	abstract List<T> decryptListFieldLazily(Object entity, String fieldName, String keyName);

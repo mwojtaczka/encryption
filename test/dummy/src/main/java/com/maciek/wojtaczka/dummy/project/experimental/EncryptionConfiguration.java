@@ -5,11 +5,14 @@ import com.maciek.wojtaczka.encryption.core.CipherMechanism;
 import com.maciek.wojtaczka.encryption.core.EncryptionFacade;
 import com.maciek.wojtaczka.encryption.core.EncryptionKey;
 import com.maciek.wojtaczka.encryption.core.EncryptionKeyProvider;
+import com.maciek.wojtaczka.encryption.core.HmacSha256Mechanism;
+import com.maciek.wojtaczka.encryption.framework.base.BlindIdConverter;
 import com.maciek.wojtaczka.encryption.framework.base.EntityEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.EntityStringFieldsEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.FieldEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.KeyNameResolver;
 import com.maciek.wojtaczka.encryption.framework.base.StringEncryptor;
+import com.maciek.wojtaczka.encryption.framework.spring.aspect.BlindIdSearchAspect;
 import com.maciek.wojtaczka.encryption.framework.spring.aspect.EncryptionJpaAspect;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,24 +26,49 @@ import java.util.Set;
 public class EncryptionConfiguration {
 
 	@Bean
-	public EncryptionJpaAspect encryptionJpaAspect(EntityEncryptor encryptor) {
+	public EncryptionJpaAspect encryptionJpaAspect(EntityEncryptor<String> encryptor) {
 		return new EncryptionJpaAspect(encryptor);
 	}
 
 	@Bean
-	public EntityEncryptor<String> encryptor() {
-		CipherMechanism cipherMechanism = new AesGcmNoPaddingMechanism();
-		EncryptionKeyProvider encryptionKeyProvider = new StaticKeyProvider();
-		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(cipherMechanism), encryptionKeyProvider);
-		FieldEncryptor<String> stringFieldEncryptor = new StringEncryptor(encryptionFacade);
-		KeyNameResolver keyNameResolver = new StaticKeyNameResolver();
+	public BlindIdConverter<String> blindIdConverter(FieldEncryptor<String> stringFieldEncryptor, KeyNameResolver keyNameResolver) {
+		return new BlindIdConverter<>(stringFieldEncryptor, keyNameResolver, "HmacSHA256");
+	}
+
+	@Bean
+	public BlindIdSearchAspect<String> stringBlindIdSearchAspect(BlindIdConverter<String> blindIdConverter) {
+		return new BlindIdSearchAspect<>(blindIdConverter);
+	}
+
+	@Bean
+	public EntityEncryptor<String> encryptor(FieldEncryptor<String> stringFieldEncryptor, KeyNameResolver keyNameResolver) {
+
 		return new EntityStringFieldsEncryptor(stringFieldEncryptor, keyNameResolver);
+	}
+
+	@Bean
+	public KeyNameResolver keyNameResolver() {
+		return new StaticKeyNameResolver();
+	}
+
+	@Bean
+	public FieldEncryptor<String> stringFieldEncryptor() {
+		CipherMechanism cipherMechanism = new AesGcmNoPaddingMechanism();
+		CipherMechanism blindIdHash = new HmacSha256Mechanism();
+		EncryptionKeyProvider encryptionKeyProvider = new StaticKeyProvider();
+		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(cipherMechanism, blindIdHash), encryptionKeyProvider);
+		return new StringEncryptor(encryptionFacade);
 	}
 
 	static class StaticKeyNameResolver implements KeyNameResolver {
 		@Override
 		public String resolveEncryptionKeyName(Object entity) {
 			return "encryption-key";
+		}
+
+		@Override
+		public String resolveBlindIdKeyName() {
+			return "blind-id-key";
 		}
 	}
 
@@ -70,7 +98,6 @@ public class EncryptionConfiguration {
 			return encryptionKey;
 		}
 	}
-
 
 
 }
