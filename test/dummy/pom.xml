@@ -13,7 +13,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.maciek.wojtaczka</groupId>
-			<artifactId>encryption-framework-spring</artifactId>
+			<artifactId>encryption-framework-spring-starter</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>

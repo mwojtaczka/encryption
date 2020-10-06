@@ -62,7 +62,6 @@ class FieldWithContext {
 		String algorithm;
 		boolean searchable;
 		String blindIdFieldName;
-		String blindIdAlgorithm;
 	}
 
 }

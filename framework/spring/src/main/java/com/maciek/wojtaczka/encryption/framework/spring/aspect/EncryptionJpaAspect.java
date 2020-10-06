@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Aspect
-public class EncryptionJpaAspect {
+public class EncryptionJpaAspect <C> {
 
-	private final EntityEncryptor encryptor;
+	private final EntityEncryptor<C> encryptor;
 
-	public EncryptionJpaAspect(EntityEncryptor encryptor) {
+	public EncryptionJpaAspect(EntityEncryptor<C> encryptor) {
 		this.encryptor = encryptor;
 	}
 

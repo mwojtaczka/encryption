@@ -18,11 +18,13 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 	private final FieldEncryptor<String> fieldEncryptor;
 	private final FieldExtractor fieldExtractor;
 	private final KeyNameResolver keyNameResolver;
+	private final String hashingAlgorithm;
 
-	public EntityStringFieldsEncryptor(FieldEncryptor<String> fieldEncryptor, KeyNameResolver keyNameResolver) {
+	public EntityStringFieldsEncryptor(FieldEncryptor<String> fieldEncryptor, KeyNameResolver keyNameResolver, String hashingAlgorithm) {
 		this.fieldEncryptor = fieldEncryptor;
 		this.fieldExtractor = new FieldExtractor();
 		this.keyNameResolver = keyNameResolver;
+		this.hashingAlgorithm = hashingAlgorithm;
 	}
 
 	@Override
@@ -55,7 +57,7 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 			Object value = field.getValue();
 			if (value instanceof String) {
 				if (field.isSearchable()) {
-					String blindId = fieldEncryptor.hash((String) value, keyBlindIdName, fieldMetadata.getBlindIdAlgorithm());
+					String blindId = fieldEncryptor.hash((String) value, keyBlindIdName, hashingAlgorithm);
 					field.setBlindId(blindId);
 				}
 				String encrypted = fieldEncryptor.encrypt((String) value, keyName, fieldMetadata.getAlgorithm());

@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.maciek.wojtaczka.encryption.framework.spring.autoconfigure.EncryptionConfiguration,\
+  com.maciek.wojtaczka.encryption.framework.spring.autoconfigure.SpringDataProxiesConfiguration
