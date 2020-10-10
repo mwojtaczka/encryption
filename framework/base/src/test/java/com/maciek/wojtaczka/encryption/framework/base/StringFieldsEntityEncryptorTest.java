@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EntityStringFieldsEncryptorTest {
+class StringFieldsEntityEncryptorTest {
 
 	@Mock
 	private EncryptionKeyProvider keyProvider;
@@ -44,7 +44,7 @@ class EntityStringFieldsEncryptorTest {
 		CipherMechanism hmacShaMechanism = new HmacSha256Mechanism();
 		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(aesGcmNoPaddingMechanism, hmacShaMechanism), keyProvider);
 		FieldEncryptor<String> stringEncryptor = new StringEncryptor(encryptionFacade);
-		entityEncryptor = new EntityStringFieldsEncryptor(stringEncryptor, keyNameResolver, "HmacSHA256");
+		entityEncryptor = new StringFieldsEntityEncryptor(stringEncryptor, keyNameResolver, "HmacSHA256");
 	}
 
 	@Test

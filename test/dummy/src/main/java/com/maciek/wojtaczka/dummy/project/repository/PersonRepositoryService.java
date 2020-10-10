@@ -4,6 +4,7 @@ import com.maciek.wojtaczka.dummy.project.model.Person;
 import com.maciek.wojtaczka.dummy.project.repository.entity.PersonEntity;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -82,6 +83,7 @@ public class PersonRepositoryService {
 							   .collect(Collectors.toList());
 	}
 
+	@Transactional
 	public List<Person> findByNameAndSurnameAndMaritalStatus(String name, String surname, String maritalStatus) {
 
 		return personRepository.findByNameAndSurnameBlindIdAndMaritalStatusBlindId(name, surname, maritalStatus).stream()

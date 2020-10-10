@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<String> {
+public class StringFieldsEntityEncryptor extends AbstractLazyEntityEncryptor<String> {
 
 	private static final Class<String> STRING_CLASS = String.class;
 
@@ -20,7 +20,7 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 	private final KeyNameResolver keyNameResolver;
 	private final String hashingAlgorithm;
 
-	public EntityStringFieldsEncryptor(FieldEncryptor<String> fieldEncryptor, KeyNameResolver keyNameResolver, String hashingAlgorithm) {
+	public StringFieldsEntityEncryptor(FieldEncryptor<String> fieldEncryptor, KeyNameResolver keyNameResolver, String hashingAlgorithm) {
 		this.fieldEncryptor = fieldEncryptor;
 		this.fieldExtractor = new FieldExtractor();
 		this.keyNameResolver = keyNameResolver;
@@ -31,22 +31,15 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 	public void encryptObject(Object object) {
 
 		String keyName = keyNameResolver.resolveEncryptionKeyName(object);
-		String keyBlindIdName = keyNameResolver.resolveBlindIdKeyName();
-		this.encryptObject(object, keyName, keyBlindIdName);
+		this.encryptObject(object, keyName);
 	}
 
 	@Override
 	public void encryptObject(Object object, String keyName) {
 
+		String keyBlindIdName = keyNameResolver.resolveBlindIdKeyName();
 		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS)
-					  .forEach(fieldWithContext -> processFieldEncryption(fieldWithContext, keyName, keyName));
-	}
-
-	@Override
-	public void encryptObject(Object object, String keyName, String keyBlindId) {
-
-		fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS)
-					  .forEach(fieldWithContext -> processFieldEncryption(fieldWithContext, keyName, keyBlindId));
+					  .forEach(fieldWithContext -> processFieldEncryption(fieldWithContext, keyName, keyBlindIdName));
 	}
 
 
@@ -107,45 +100,37 @@ public class EntityStringFieldsEncryptor extends AbstractLazyEntityEncryptor<Str
 
 	private void decryptField(FieldWithContext field, String keyName) {
 
-		try {
-			Object value = field.getValue();
-			if (value instanceof String) {
-				String encrypted = fieldEncryptor.decrypt((String) value, keyName, field.getMetadata().getAlgorithm());
-				field.setValue(encrypted);
-			} else if (value instanceof List || value instanceof Set) {
-				Iterable<String> iterable = (Iterable) value;
+		Object value = field.getValue();
+		if (value instanceof String) {
+			String encrypted = fieldEncryptor.decrypt((String) value, keyName, field.getMetadata().getAlgorithm());
+			field.setValue(encrypted);
+		} else if (value instanceof List || value instanceof Set) {
+			Iterable<String> iterable = (Iterable) value;
 
-				Collection<String> collect = StreamSupport.stream(iterable.spliterator(), false)
-					.map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata().getAlgorithm()))
-					.collect(Collectors.toCollection(getCollectionFactory(value)));
+			Collection<String> collect = StreamSupport.stream(iterable.spliterator(), false)
+				.map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata().getAlgorithm()))
+				.collect(Collectors.toCollection(getCollectionFactory(value)));
 
-				field.setValue(collect);
-			}
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			field.setValue(collect);
 		}
 	}
 
 	private <T> T decryptFieldValue(FieldWithContext field, String keyName) {
 
-		try {
-			Object value = field.getValue();
-			if (value instanceof String) {
-				//noinspection unchecked
-				return (T) fieldEncryptor.decrypt((String) value, keyName, field.getMetadata().getAlgorithm());
-			} else if (value instanceof List || value instanceof Set) {
-				Iterable<String> iterable = (Iterable) value; //check
+		Object value = field.getValue();
+		if (value instanceof String) {
+			//noinspection unchecked
+			return (T) fieldEncryptor.decrypt((String) value, keyName, field.getMetadata().getAlgorithm());
+		} else if (value instanceof List || value instanceof Set) {
+			Iterable<String> iterable = (Iterable) value; //check
 
-				//noinspection unchecked
-				return (T) StreamSupport.stream(iterable.spliterator(), false)
-					.map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata().getAlgorithm()))
-					.collect(Collectors.toCollection(getCollectionFactory(value)));
+			//noinspection unchecked
+			return (T) StreamSupport.stream(iterable.spliterator(), false)
+				.map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata().getAlgorithm()))
+				.collect(Collectors.toCollection(getCollectionFactory(value)));
 
-			} else {
-				throw new EncryptionException("Unsupported type for decryption");
-			}
-		} catch (IllegalAccessException e) {
-			throw new EncryptionException("");
+		} else {
+			throw new EncryptionException("Unsupported type for decryption");
 		}
 
 	}

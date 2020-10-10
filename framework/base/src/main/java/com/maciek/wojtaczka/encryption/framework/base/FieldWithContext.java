@@ -1,5 +1,6 @@
 package com.maciek.wojtaczka.encryption.framework.base;
 
+import com.maciek.wojtaczka.encryption.core.exception.EncryptionException;
 import com.maciek.wojtaczka.encryption.framework.base.annotation.Encrypt;
 import lombok.Builder;
 import lombok.Value;
@@ -21,14 +22,22 @@ class FieldWithContext {
 		this.context = context;
 	}
 
-	Object getValue() throws IllegalAccessException {
+	Object getValue() {
 		this.field.setAccessible(true);
-		return this.field.get(this.context);
+		try {
+			return this.field.get(this.context);
+		} catch (IllegalAccessException e) {
+			throw new EncryptionException("Unexpected error during accessing field.", e);
+		}
 	}
 
-	void setValue(Object value) throws IllegalAccessException {
+	void setValue(Object value) {
 		this.field.setAccessible(true);
-		this.field.set(this.context, value);
+		try {
+			this.field.set(this.context, value);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 
 	void setBlindId(Object value) throws IllegalAccessException, NoSuchFieldException {

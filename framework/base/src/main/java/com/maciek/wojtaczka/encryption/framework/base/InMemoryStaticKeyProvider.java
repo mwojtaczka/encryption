@@ -1,4 +1,7 @@
-package com.maciek.wojtaczka.encryption.core;
+package com.maciek.wojtaczka.encryption.framework.base;
+
+import com.maciek.wojtaczka.encryption.core.EncryptionKey;
+import com.maciek.wojtaczka.encryption.core.EncryptionKeyProvider;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;

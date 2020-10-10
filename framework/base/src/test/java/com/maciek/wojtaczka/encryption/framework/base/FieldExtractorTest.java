@@ -48,7 +48,7 @@ class FieldExtractorTest {
 	}
 
 	@Test
-	void shouldReturnOneIterableField() throws IllegalAccessException {
+	void shouldReturnOneIterableField() {
 		Entity entity = Entity.builder()
 			.nonSensitive("non sensitive")
 			.sensitives(List.of("sensitive1", "sensitive2"))
@@ -64,7 +64,7 @@ class FieldExtractorTest {
 	}
 
 	@Test
-	void shouldReturnOneStringFieldFromEmbeddedEntity() throws IllegalAccessException {
+	void shouldReturnOneStringFieldFromEmbeddedEntity() {
 		EmbeddedEntity embeddedEntity = EmbeddedEntity.builder()
 			.nonSensitive("embedded non sensitive")
 			.sensitive("embedded sensitive")
@@ -83,7 +83,7 @@ class FieldExtractorTest {
 	}
 
 	@Test
-	void shouldReturnOneIterableFieldFromEmbeddedEntity() throws IllegalAccessException {
+	void shouldReturnOneIterableFieldFromEmbeddedEntity() {
 		EmbeddedEntity embeddedEntity = EmbeddedEntity.builder()
 			.nonSensitive("embedded non sensitive")
 			.sensitives(List.of("embedded sensitive in list"))
