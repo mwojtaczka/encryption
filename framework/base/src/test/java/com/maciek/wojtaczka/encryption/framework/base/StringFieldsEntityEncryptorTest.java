@@ -49,8 +49,8 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldNotContainOriginalValue() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 			.sensitive1("sensitive1")
 			.sensitive2("sensitive2")
@@ -66,9 +66,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptEntityStringFields() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 			.sensitive1("sensitive1")
 			.sensitive2("sensitive2")
@@ -89,9 +89,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptEntityStringListField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 			.sensitiveList(List.of("sensitive"))
 			.build();
@@ -109,9 +109,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptEntityStringSetField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 			.sensitiveSet(Set.of("sensitive"))
 			.build();
@@ -129,9 +129,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptEntityEmbeddedEntityField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		EmbeddedEntity embeddedEntity = EmbeddedEntity.builder()
 			.sensitive("sensitive")
 			.build();
@@ -152,9 +152,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptEntityEmbeddedEntityListField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		EmbeddedEntity embeddedEntity = EmbeddedEntity.builder()
 			.sensitive("sensitive")
 			.build();
@@ -175,9 +175,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndThenDecryptOnlyEagerFields() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 			.sensitive1("sensitive")
 			.lazySensitive("sensitive")
@@ -198,9 +198,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptLazyField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 			.lazySensitive("sensitive")
 			.build();
@@ -214,9 +214,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptLazyListField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 							  .lazySensitiveList(List.of("sensitive"))
 							  .build();
@@ -230,9 +230,9 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldEncryptAndDecryptLazySetField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getKey("test_key", 1, "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 							  .lazySensitiveSet(Set.of("sensitive"))
 							  .build();
@@ -246,8 +246,8 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldThrowEncryptionException_whenFieldNameDoesNotMatchToAnyFields() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 			.lazySensitive("sensitive")
 			.build();
@@ -260,9 +260,10 @@ class StringFieldsEntityEncryptorTest {
 
 	@Test
 	void shouldFillBlindIdField() {
-		EncryptionKey test_key = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
-		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(test_key);
-		when(keyProvider.getLatestKey("test_key", "HmacSHA256")).thenReturn(test_key);
+		EncryptionKey testKey = EncryptionKey.of("test_key", generateAesSecretKey(), 1);
+		when(keyNameResolver.resolveBlindIdKeyName()).thenReturn("test_key");
+		when(keyProvider.getLatestKey("test_key", "AES/GCM/NoPadding")).thenReturn(testKey);
+		when(keyProvider.getLatestKey("test_key", "HmacSHA256")).thenReturn(testKey);
 		Entity entity = Entity.builder()
 							  .searchableSensitive("sensitive")
 							  .build();
@@ -305,19 +306,23 @@ class StringFieldsEntityEncryptorTest {
 		String searchableSensitiveBlindId;
 
 		String getDecryptedLazySensitive() {
-			return StaticDecryptor.decryptField(this, "lazySensitive", "test_key");
+			StaticDecryptor.decryptField(this, "lazySensitive", "test_key");
+			return lazySensitive;
 		}
 
 		String getDecryptedLazySensitiveWrongFieldName() {
-			return StaticDecryptor.decryptField(this, "wrongName", "test_key");
+			StaticDecryptor.decryptField(this, "wrongName", "test_key");
+			return lazySensitive;
 		}
 
 		List<String> getDecryptedLazySensitiveList() {
-			return StaticDecryptor.decryptListField(this, "lazySensitiveList", "test_key");
+			StaticDecryptor.decryptIterableField(this, "lazySensitiveList", "test_key");
+			return lazySensitiveList;
 		}
 
 		Set<String> getDecryptedLazySensitiveSet() {
-			return StaticDecryptor.decryptSetField(this, "lazySensitiveSet", "test_key");
+			StaticDecryptor.decryptIterableField(this, "lazySensitiveSet", "test_key");
+			return lazySensitiveSet;
 		}
 
 	}

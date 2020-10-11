@@ -7,7 +7,7 @@ import lombok.Value;
 
 import java.lang.reflect.Field;
 
-class FieldWithContext {
+class FieldWithContext <F> {
 
 	private static final Class<Encrypt> TO_ENCRYPT = Encrypt.class;
 	private static final String BLIND_ID = "BlindId";
@@ -17,21 +17,21 @@ class FieldWithContext {
 	private final Object context;
 	private Metadata metadata;
 
-	FieldWithContext(Field field, Object context) {
+	FieldWithContext(Field field, Object context, Class<F> fieldType) {
 		this.field = field;
 		this.context = context;
 	}
 
-	Object getValue() {
+	F getValue() {
 		this.field.setAccessible(true);
 		try {
-			return this.field.get(this.context);
+			return (F) this.field.get(this.context);
 		} catch (IllegalAccessException e) {
 			throw new EncryptionException("Unexpected error during accessing field.", e);
 		}
 	}
 
-	void setValue(Object value) {
+	void setValue(F value) {
 		this.field.setAccessible(true);
 		try {
 			this.field.set(this.context, value);
@@ -40,11 +40,15 @@ class FieldWithContext {
 		}
 	}
 
-	void setBlindId(Object value) throws IllegalAccessException, NoSuchFieldException {
-		Field blindIdField = context.getClass()
-									 .getDeclaredField(field.getName() + BLIND_ID);
-		blindIdField.setAccessible(true);
-		blindIdField.set(this.context, value);
+	void setBlindId(Object value) throws NoSuchFieldException {
+		try {
+			Field blindIdField = context.getClass()
+										.getDeclaredField(field.getName() + BLIND_ID);
+			blindIdField.setAccessible(true);
+			blindIdField.set(this.context, value);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 
 	boolean isSearchable() {

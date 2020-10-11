@@ -1,14 +1,12 @@
 package com.maciek.wojtaczka.encryption.framework.base;
 
+import com.maciek.wojtaczka.encryption.core.exception.EncryptionException;
 import com.maciek.wojtaczka.encryption.framework.base.annotation.Encrypt;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -18,72 +16,102 @@ class FieldExtractor {
 
 	private static final Class<Encrypt> TO_ENCRYPT = Encrypt.class;
 
-	public <F> Set<FieldWithContext> getAllFieldsToBeEncrypted(Object entity, Class<F> clazzOfTheField) {
-		return getFieldsAnnotatedBy(entity, clazzOfTheField, TO_ENCRYPT)
-			.collect(Collectors.toSet());
+	public <F> FieldsContainer<F> getAllFieldsToBeEncrypted(Object entity, Class<F> clazzOfTheField) {
+		FieldsContainer<F> fieldsContainer = new FieldsContainer<>();
+
+		putAnnotatedFieldsIntoContainer(entity, clazzOfTheField, fieldsContainer);
+
+		return fieldsContainer;
 	}
 
-	private Stream<? extends FieldWithContext> getFieldsAnnotatedBy(Object entity, Class<?> clazzOfTheField, Class<? extends Annotation>... annotationType) {
-		return stream(entity.getClass().getDeclaredFields())
-			.filter(field -> isFieldAnnotatedBy(field, annotationType))
-			.map(field -> new FieldWithContext(field, entity))
-			.flatMap(fieldWithContext -> recursivelyGetAllStringFieldsAnnotatedBy(fieldWithContext, clazzOfTheField, annotationType));
+	private <F> void putAnnotatedFieldsIntoContainer(Object entity, Class<F> clazzOfTheField, FieldsContainer<F> fieldsContainer) {
+
+		Class<?> entityClass = entity.getClass();
+		stream(entityClass.getDeclaredFields())
+				.filter(field -> field.isAnnotationPresent(TO_ENCRYPT))
+				.forEach(field -> fieldsContainer.put(field, entity, clazzOfTheField));
+
+		fieldsContainer.getStreamOfEmbedded()
+					   .forEach(embeddedEntity -> putAnnotatedFieldsIntoContainer(embeddedEntity, clazzOfTheField, fieldsContainer));
 	}
 
-	private Stream<? extends FieldWithContext> recursivelyGetAllStringFieldsAnnotatedBy(FieldWithContext fieldWithContext, Class<?> clazzOfTheField,
-																						Class<? extends Annotation>... annotationType) {
+	public <F> FieldWithContext<F> getFieldByName(Object entity, String fieldName, Class<F> fieldType) throws NoSuchFieldException {
+		Field declaredField = entity.getClass()
+									.getDeclaredField(fieldName);
+		return new FieldWithContext<>(declaredField, entity, fieldType);
+	}
 
-		Object fieldValue = fieldWithContext.getValue();
-		if (fieldValue == null) {
-			return Stream.of();
-		} else {
-			if (isOfClassOrSubclass(fieldValue, Iterable.class) && areElementsOfClassOrSubclass((Iterable) fieldValue, clazzOfTheField)) {
+	public <F> FieldWithContext<Iterable<F>> getIterableFieldByName(Object entity, String fieldName, Class<F> fieldType) throws NoSuchFieldException {
+		Field declaredField = entity.getClass()
+									.getDeclaredField(fieldName);
+		Class<Iterable<F>> iterableClass = (Class<Iterable<F>>) declaredField.getType();
+		return new FieldWithContext<>(declaredField, entity, iterableClass);
+	}
 
-				return Stream.of(fieldWithContext);
+	static class FieldsContainer<F> {
+		private final Set<FieldWithContext<F>> fields = new HashSet<>();
+		private final Set<FieldWithContext<Iterable<F>>> iterableFields = new HashSet<>();
+		private final Set<Object> embeddedFields = new HashSet<>();
+		private final Set<Iterable<?>> iterableEmbeddedFields = new HashSet<>();
 
-			} else if (isOfClassOrSubclass(fieldValue, Iterable.class) && !areElementsOfClassOrSubclass((Iterable) fieldValue, clazzOfTheField)) {
-
-				Iterable<?> iterable = (Iterable) fieldValue;
-				return StreamSupport.stream(iterable.spliterator(), false)
-					.flatMap(o -> getFieldsAnnotatedBy(o, clazzOfTheField, annotationType));
-
-			} else if (isOfClassOrSubclass(fieldValue, clazzOfTheField)) {
-
-				return Stream.of(fieldWithContext);
-
+		private void put(Field field, Object context, Class<F> encryptionFieldType) {
+			field.setAccessible(true);
+			Object fieldValue = getFieldValue(field, context);
+			Class<?> fieldType = field.getType();
+			if (fieldValue == null) {
+				//noinspection UnnecessaryReturnStatement
+				return;
+			} else if (fieldType.equals(encryptionFieldType)) {
+				fields.add(new FieldWithContext<>(field, context, encryptionFieldType));
+			} else if (Iterable.class.isAssignableFrom(fieldType) && areElementsOfClassOrSubclass((Iterable<?>) fieldValue, encryptionFieldType)) {
+				Iterable<F> iterable = (Iterable<F>) fieldValue;
+				Class<Iterable<F>> iterableClass = (Class<Iterable<F>>) iterable.getClass();
+				iterableFields.add(new FieldWithContext<>(field, context, iterableClass));
+			} else if (Iterable.class.isAssignableFrom(fieldType)) {
+				Iterable<?> iterable = (Iterable<?>) fieldValue;
+				iterableEmbeddedFields.add(iterable);
 			} else {
-				return getFieldsAnnotatedBy(fieldValue, clazzOfTheField, annotationType);
+				embeddedFields.add(fieldValue);
 			}
 		}
-	}
 
-	private boolean isOfClassOrSubclass(Object object, Class<?> clazz) {
-		return clazz.isAssignableFrom(object.getClass());
-	}
+		private Object getFieldValue(Field field, Object context) {
+			try {
+				return field.get(context);
+			} catch (IllegalAccessException e) {
+				throw new EncryptionException("Unexpected error during accessing field.", e);
+			}
+		}
 
-	private boolean areElementsOfClassOrSubclass(Iterable iterable, Class<?> clazz) {
-		Iterator iterator = iterable.iterator();
-		if (iterator.hasNext()) {
-			Object next = iterator.next();
-			return clazz.isAssignableFrom(next.getClass());
-		} else {
-			return false;
+		private boolean areElementsOfClassOrSubclass(Iterable<?> iterable, Class<?> clazz) {
+			Iterator<?> iterator = iterable.iterator();
+			if (iterator.hasNext()) {
+				Object next = iterator.next();
+				return clazz.isInstance(next);
+			} else {
+				return false;
+			}
+		}
+
+		private Stream<Object> getStreamOfEmbedded() {
+			Stream<Object> streamOfEmbedded1 = Set.copyOf(embeddedFields)
+												  .stream();
+			Stream<Object> streamOfEmbedded2 = Set.copyOf(iterableEmbeddedFields)
+												  .stream()
+												  .flatMap(iterable -> StreamSupport.stream(iterable.spliterator(), false));
+			embeddedFields.clear();
+			iterableEmbeddedFields.clear();
+
+			return Stream.concat(streamOfEmbedded1, streamOfEmbedded2);
+		}
+
+		Set<FieldWithContext<F>> getFields() {
+			return fields;
+		}
+
+		Set<FieldWithContext<Iterable<F>>> getIterableFields() {
+			return iterableFields;
 		}
 	}
 
-	private boolean isFieldAnnotatedBy(Field field, Class<? extends Annotation>... annotations) {
-		List<Class<? extends Annotation>> annotationList = Arrays.asList(annotations);
-		return getDeclaredAnnotationsTypes(field).containsAll(annotationList);
-	}
-
-	private Set<Class<? extends Annotation>> getDeclaredAnnotationsTypes(Field field) {
-		return stream(field.getDeclaredAnnotations())
-			.map(Annotation::annotationType)
-			.collect(Collectors.toSet());
-	}
-
-	public FieldWithContext getFieldByName(Object entity, String fieldName) throws NoSuchFieldException {
-		Field declaredField = entity.getClass().getDeclaredField(fieldName);
-		return new FieldWithContext(declaredField, entity);
-	}
 }
