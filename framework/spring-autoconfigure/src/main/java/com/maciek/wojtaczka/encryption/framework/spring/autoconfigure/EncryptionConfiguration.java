@@ -10,12 +10,12 @@ import com.maciek.wojtaczka.encryption.framework.base.BlindIdConverter;
 import com.maciek.wojtaczka.encryption.framework.base.EntityEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.EntityUpdater;
 import com.maciek.wojtaczka.encryption.framework.base.FieldEncryptor;
+import com.maciek.wojtaczka.encryption.framework.base.GenericEntityEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.InMemoryStaticKeyProvider;
 import com.maciek.wojtaczka.encryption.framework.base.KeyNameResolver;
 import com.maciek.wojtaczka.encryption.framework.base.StaleEncryptionPredicate;
 import com.maciek.wojtaczka.encryption.framework.base.StaticKeyNameResolver;
 import com.maciek.wojtaczka.encryption.framework.base.StringEncryptor;
-import com.maciek.wojtaczka.encryption.framework.base.StringFieldsEntityEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.StringStaleEncryptionPredicate;
 import com.maciek.wojtaczka.encryption.framework.base.annotation.Encrypt;
 import com.maciek.wojtaczka.encryption.framework.spring.JpaUpdater;
@@ -38,7 +38,8 @@ public class EncryptionConfiguration {
 											 @Value("${encryption.framework.blindId.algorithm:HmacSHA256}") String hashingAlgorithm,
 											 EncryptionKeyProvider keyProvider, EntityUpdater entityUpdater) {
 
-		StringFieldsEntityEncryptor encryptor = new StringFieldsEntityEncryptor(stringFieldEncryptor, keyNameResolver, hashingAlgorithm);
+		GenericEntityEncryptor<String> encryptor =
+				new GenericEntityEncryptor<>(stringFieldEncryptor, keyNameResolver, hashingAlgorithm, String.class);
 		StaleEncryptionPredicate predicate = new StringStaleEncryptionPredicate(keyProvider);
 		return new AsyncReencryptDecorator<>(encryptor, predicate, entityUpdater);
 	}

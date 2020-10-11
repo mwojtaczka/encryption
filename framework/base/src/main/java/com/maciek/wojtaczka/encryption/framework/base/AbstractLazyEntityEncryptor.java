@@ -1,6 +1,6 @@
 package com.maciek.wojtaczka.encryption.framework.base;
 
-public abstract class AbstractLazyEntityEncryptor<T> implements EntityEncryptor<T> {
+public abstract class AbstractLazyEntityEncryptor<F> implements EntityEncryptor<F> {
 
 	public AbstractLazyEntityEncryptor() {
 		StaticDecryptor.initialize(this);

@@ -4,7 +4,7 @@ public final class StaticDecryptor {
 
 	private static AbstractLazyEntityEncryptor<?> instance;
 
-	public static synchronized <T> void initialize(AbstractLazyEntityEncryptor<T> entityEncryptor) {
+	public static synchronized <F> void initialize(AbstractLazyEntityEncryptor<F> entityEncryptor) {
 		if (entityEncryptor != null) {
 			instance = entityEncryptor;
 		}

@@ -44,7 +44,7 @@ class StringFieldsEntityEncryptorTest {
 		CipherMechanism hmacShaMechanism = new HmacSha256Mechanism();
 		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(aesGcmNoPaddingMechanism, hmacShaMechanism), keyProvider);
 		FieldEncryptor<String> stringEncryptor = new StringEncryptor(encryptionFacade);
-		entityEncryptor = new StringFieldsEntityEncryptor(stringEncryptor, keyNameResolver, "HmacSHA256");
+		entityEncryptor = new GenericEntityEncryptor<>(stringEncryptor, keyNameResolver, "HmacSHA256", String.class);
 	}
 
 	@Test

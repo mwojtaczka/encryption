@@ -12,7 +12,7 @@ public class BlindIdConverter <C> {
 		this.hashingAlgorithm = hashingAlgorithm;
 	}
 
-	public C hash(C value) {
+	public String hash(C value) {
 		return fieldEncryptor.hash(value, keyNameResolver.resolveBlindIdKeyName(), hashingAlgorithm);
 	}
 }

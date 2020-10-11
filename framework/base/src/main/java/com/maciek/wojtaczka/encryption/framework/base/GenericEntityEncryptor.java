@@ -11,20 +11,22 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class StringFieldsEntityEncryptor extends AbstractLazyEntityEncryptor<String> {
+public class GenericEntityEncryptor<F> extends AbstractLazyEntityEncryptor<F> {
 
-	private static final Class<String> STRING_CLASS = String.class;
+	private final Class<F> encryptedFieldType;
 
-	private final FieldEncryptor<String> fieldEncryptor;
+	private final FieldEncryptor<F> fieldEncryptor;
 	private final FieldExtractor fieldExtractor;
 	private final KeyNameResolver keyNameResolver;
 	private final String hashingAlgorithm;
 
-	public StringFieldsEntityEncryptor(FieldEncryptor<String> fieldEncryptor, KeyNameResolver keyNameResolver, String hashingAlgorithm) {
+	public GenericEntityEncryptor(FieldEncryptor<F> fieldEncryptor, KeyNameResolver keyNameResolver, String hashingAlgorithm,
+								  Class<F> encryptedFieldType) {
 		this.fieldEncryptor = fieldEncryptor;
 		this.fieldExtractor = new FieldExtractor();
 		this.keyNameResolver = keyNameResolver;
 		this.hashingAlgorithm = hashingAlgorithm;
+		this.encryptedFieldType = encryptedFieldType;
 	}
 
 	@Override
@@ -38,7 +40,7 @@ public class StringFieldsEntityEncryptor extends AbstractLazyEntityEncryptor<Str
 	public void encryptObject(Object object, String keyName) {
 
 		String keyBlindIdName = keyNameResolver.resolveBlindIdKeyName();
-		FieldExtractor.FieldsContainer<String> fieldsToBeEncryptedContainer = fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS);
+		FieldExtractor.FieldsContainer<F> fieldsToBeEncryptedContainer = fieldExtractor.getAllFieldsToBeEncrypted(object, encryptedFieldType);
 		fieldsToBeEncryptedContainer
 				.getFields()
 				.forEach(fieldWithContext -> encryptField(fieldWithContext, keyName, keyBlindIdName));
@@ -48,35 +50,35 @@ public class StringFieldsEntityEncryptor extends AbstractLazyEntityEncryptor<Str
 	}
 
 
-	private void encryptField(FieldWithContext<String> field, String keyName, String keyBlindIdName) {
+	private void encryptField(FieldWithContext<F> field, String keyName, String keyBlindIdName) {
 
 		FieldWithContext.Metadata fieldMetadata = field.getMetadata();
 		try {
-			String value = field.getValue();
+			F value = field.getValue();
 			if (field.isSearchable()) {
 				String blindId = fieldEncryptor.hash(value, keyBlindIdName, hashingAlgorithm);
 				field.setBlindId(blindId);
 			}
-			String encrypted = fieldEncryptor.encrypt(value, keyName, fieldMetadata.getAlgorithm());
+			F encrypted = fieldEncryptor.encrypt(value, keyName, fieldMetadata.getAlgorithm());
 			field.setValue(encrypted);
 		} catch (NoSuchFieldException e) {
 			throw new EncryptionException("BlindId field not found. Consider define field: " + fieldMetadata.getBlindIdFieldName());
 		}
 	}
 
-	private void encryptIterableField(FieldWithContext<Iterable<String>> field, String keyName) {
+	private void encryptIterableField(FieldWithContext<Iterable<F>> field, String keyName) {
 
 		FieldWithContext.Metadata fieldMetadata = field.getMetadata();
-		Iterable<String> iterable = field.getValue();
+		Iterable<F> iterable = field.getValue();
 
-		Collection<String> collect = StreamSupport.stream(iterable.spliterator(), false)
-												  .map(s -> fieldEncryptor.encrypt(s, keyName, fieldMetadata.getAlgorithm()))
-												  .collect(Collectors.toCollection(getCollectionFactory(iterable)));
+		Collection<F> collect = StreamSupport.stream(iterable.spliterator(), false)
+											 .map(s -> fieldEncryptor.encrypt(s, keyName, fieldMetadata.getAlgorithm()))
+											 .collect(Collectors.toCollection(getCollectionFactory(iterable)));
 
 		field.setValue(collect);
 	}
 
-	private Supplier<Collection<String>> getCollectionFactory(Iterable<String> value) {
+	private Supplier<Collection<F>> getCollectionFactory(Iterable<F> value) {
 		if (value instanceof List) {
 			return ArrayList::new;
 		} else if (value instanceof Set) {
@@ -97,44 +99,41 @@ public class StringFieldsEntityEncryptor extends AbstractLazyEntityEncryptor<Str
 	@Override
 	public void decryptObject(Object object, String keyName) {
 
-		FieldExtractor.FieldsContainer<String> fieldsToBeEncryptedContainer = fieldExtractor.getAllFieldsToBeEncrypted(object, STRING_CLASS);
+		FieldExtractor.FieldsContainer<F> fieldsToBeEncryptedContainer = fieldExtractor.getAllFieldsToBeEncrypted(object, encryptedFieldType);
 		fieldsToBeEncryptedContainer
 				.getFields()
 				.stream()
-				.filter(fieldWithContext -> !fieldWithContext.getMetadata()
-															 .isLazy())
+				.filter(fieldWithContext -> !fieldWithContext.getMetadata().isLazy())
 				.forEach(fieldWithContext -> decryptField(fieldWithContext, keyName));
 		fieldsToBeEncryptedContainer
 				.getIterableFields()
 				.stream()
-				.filter(fieldWithContext -> !fieldWithContext.getMetadata()
-															 .isLazy())
+				.filter(fieldWithContext -> !fieldWithContext.getMetadata().isLazy())
 				.forEach(fieldWithContext -> decryptIterableField(fieldWithContext, keyName));
 	}
 
-	private void decryptField(FieldWithContext<String> field, String keyName) {
+	private void decryptField(FieldWithContext<F> field, String keyName) {
 
-		String value = field.getValue();
+		F value = field.getValue();
 		if (value == null) {
 			return;
 		}
 
-		String encrypted = fieldEncryptor.decrypt(value, keyName, field.getMetadata()
-																	   .getAlgorithm());
+		FieldWithContext.Metadata fieldMetadata = field.getMetadata();
+		F encrypted = fieldEncryptor.decrypt(value, keyName, fieldMetadata.getAlgorithm());
 		field.setValue(encrypted);
 	}
 
-	private void decryptIterableField(FieldWithContext<Iterable<String>> field, String keyName) {
+	private void decryptIterableField(FieldWithContext<Iterable<F>> field, String keyName) {
 
-		Iterable<String> iterable = field.getValue();
+		Iterable<F> iterable = field.getValue();
 		if (iterable == null) {
 			return;
 		}
 
-		Collection<String> collect = StreamSupport.stream(iterable.spliterator(), false)
-												  .map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata()
-																									.getAlgorithm()))
-												  .collect(Collectors.toCollection(getCollectionFactory(iterable)));
+		Collection<F> collect = StreamSupport.stream(iterable.spliterator(), false)
+											 .map(s -> fieldEncryptor.decrypt(s, keyName, field.getMetadata().getAlgorithm()))
+											 .collect(Collectors.toCollection(getCollectionFactory(iterable)));
 
 		field.setValue(collect);
 	}
@@ -143,9 +142,9 @@ public class StringFieldsEntityEncryptor extends AbstractLazyEntityEncryptor<Str
 
 	@Override
 	void decryptFieldLazily(Object entity, String fieldName, String keyName) {
-		FieldWithContext<String> fieldByName;
+		FieldWithContext<F> fieldByName;
 		try {
-			fieldByName = fieldExtractor.getFieldByName(entity, fieldName, String.class);
+			fieldByName = fieldExtractor.getFieldByName(entity, fieldName, encryptedFieldType);
 		} catch (NoSuchFieldException e) {
 			throw new EncryptionException("No such field found", e);
 		}
@@ -155,9 +154,9 @@ public class StringFieldsEntityEncryptor extends AbstractLazyEntityEncryptor<Str
 
 	@Override
 	void decryptIterableFieldLazily(Object entity, String fieldName, String keyName) {
-		FieldWithContext<Iterable<String>> fieldByName;
+		FieldWithContext<Iterable<F>> fieldByName;
 		try {
-			fieldByName = fieldExtractor.getIterableFieldByName(entity, fieldName, String.class);
+			fieldByName = fieldExtractor.getIterableFieldByName(entity, fieldName, encryptedFieldType);
 		} catch (NoSuchFieldException e) {
 			throw new EncryptionException("No such field found", e);
 		}
