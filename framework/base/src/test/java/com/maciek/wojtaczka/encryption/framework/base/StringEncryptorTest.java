@@ -29,12 +29,12 @@ class StringEncryptorTest {
 	void shouldContainMetadata() {
 		String toBeEncrypted = "foo_boo";
 		when(encryptionFacade.encryptBytes(any(), any(), any())).thenReturn(
-			new CipherRecord("encryptedFooBoo".getBytes(ISO_8859_1), "iv".getBytes(ISO_8859_1), "AES/GCM/NoPadding", "test_key", 999));
+			new CipherRecord("encryptedFooBoo".getBytes(ISO_8859_1), "AES/GCM/NoPadding", "test_key", 999));
 
 		String encrypted = stringEncryptor.encrypt(toBeEncrypted, "test_key", "AES/GCM/NoPadding");
 
 		Assertions.assertAll(
-			() -> assertThat(encrypted).contains("3:11:28:30:"), //bookmarks
+			() -> assertThat(encrypted).contains("3:11:28:"), //bookmarks
 			() -> assertThat(encrypted).contains("test_key"),
 			() -> assertThat(encrypted).contains("AES/GCM/NoPadding"),
 			() -> assertThat(encrypted).contains("999")
@@ -43,8 +43,8 @@ class StringEncryptorTest {
 
 	@Test
 	void shouldSendRequestToEncryptionFacadeAndDeserializeReturnedDecryptedBytes() {
-		String toBeDecrypted = "3:11:28:30:999test_keyAES/GCM/NoPaddingIvEncryptedFooBoo";
-		CipherRecord cr = new CipherRecord("EncryptedFooBoo".getBytes(ISO_8859_1), "Iv".getBytes(ISO_8859_1), "AES/GCM/NoPadding", "test_key", 999);
+		String toBeDecrypted = "3:11:28:999test_keyAES/GCM/NoPaddingEncryptedFooBoo";
+		CipherRecord cr = new CipherRecord("EncryptedFooBoo".getBytes(ISO_8859_1), "AES/GCM/NoPadding", "test_key", 999);
 		when(encryptionFacade.decryptRecord(cr, "test_key", "AES/GCM/NoPadding")).thenReturn(
 			"foo_boo".getBytes(UTF_16));
 

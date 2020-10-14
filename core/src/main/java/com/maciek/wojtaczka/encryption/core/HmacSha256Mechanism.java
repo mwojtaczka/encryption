@@ -23,14 +23,14 @@ public class HmacSha256Mechanism implements CipherMechanism{
 			sha256Hmac.init(secretKey);
 			byte[] hashed = sha256Hmac.doFinal(content);
 
-			return CipherResult.of(hashed, null, HMAC_SHA_256);
+			return CipherResult.of(hashed, HMAC_SHA_256);
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new EncryptionException(e.getMessage(), e);
 		}
 	}
 
 	@Override
-	public byte[] decrypt(byte[] cipherContent, EncryptionMaterials encryptionMaterials) {
+	public byte[] decrypt(byte[] cipherContent, SecretKey secretKey) {
 		throw new UnsupportedOperationException("Decrypting not available for " + HMAC_SHA_256);
 	}
 }

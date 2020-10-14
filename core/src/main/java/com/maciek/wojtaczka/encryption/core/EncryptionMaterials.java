@@ -7,6 +7,5 @@ import javax.crypto.SecretKey;
 @Value(staticConstructor = "of")
 class EncryptionMaterials {
 
-	private SecretKey secretKey;
-	private byte[] iv;
+	SecretKey secretKey;
 }

@@ -8,6 +8,6 @@ public interface CipherMechanism {
 
 	CipherResult encrypt(byte[] content, SecretKey secretKey);
 
-	byte[] decrypt(byte[] cipherContent, EncryptionMaterials encryptionMaterials);
+	byte[] decrypt(byte[] cipherContent, SecretKey secretKey);
 
 }

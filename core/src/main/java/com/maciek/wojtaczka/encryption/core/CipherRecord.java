@@ -17,7 +17,6 @@ public class CipherRecord {
 	private static final int BOOKMARKS_COUNT = 4;
 
 	byte[] cipherContent;
-	byte[] iv;
 	String cipherMechanismType;
 	String encryptionKeyName;
 	int encryptionKeyVersion;
@@ -25,7 +24,6 @@ public class CipherRecord {
 	public static CipherRecord of(CipherResult cipherResult, EncryptionKey encryptionKey) {
 		return new CipherRecord(
 			cipherResult.getCipherContent(),
-			cipherResult.getIv(),
 			cipherResult.getCipherMechanism(),
 			encryptionKey.getName(),
 			encryptionKey.getVersion());

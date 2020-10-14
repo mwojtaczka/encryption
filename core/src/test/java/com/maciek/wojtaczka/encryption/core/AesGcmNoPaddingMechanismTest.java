@@ -1,6 +1,5 @@
 package com.maciek.wojtaczka.encryption.core;
 
-import com.maciek.wojtaczka.encryption.core.exception.EncryptionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +10,6 @@ import java.security.SecureRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 class AesGcmNoPaddingMechanismTest {
@@ -45,9 +43,8 @@ class AesGcmNoPaddingMechanismTest {
 
 		CipherResult cipherResult = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
 		byte[] cipherContent = cipherResult.getCipherContent();
-		EncryptionMaterials encryptionMaterials = EncryptionMaterials.of(secretKey, cipherResult.getIv());
 
-		byte[] decryptedContent = cipherMechanism.decrypt(cipherContent, encryptionMaterials);
+		byte[] decryptedContent = cipherMechanism.decrypt(cipherContent, secretKey);
 
 		assertThat(decryptedContent).isEqualTo(toBeEncrypted.getBytes(CHARSET));
 	}
@@ -63,19 +60,6 @@ class AesGcmNoPaddingMechanismTest {
 		assertThat(cipherResult1.getCipherContent()).isNotEqualTo(cipherResult2.getCipherContent());
 	}
 
-	@Test
-	void shouldThrowEncryptionException_whenIvSizeIsNot16() {
-		byte[] incorrectIv = new byte[15];
-		EncryptionMaterials encryptionMaterials = EncryptionMaterials.of(generateAesSecretKey(), incorrectIv);
-		byte[] cipherContent = new byte[1];
-
-		Throwable throwable = catchThrowable(() -> cipherMechanism.decrypt(cipherContent, encryptionMaterials));
-
-		assertAll(
-			() -> assertThat(throwable).isInstanceOf(EncryptionException.class),
-			() -> assertThat(throwable.getMessage()).isEqualTo("Invalid IV length for AES/GCM/NoPadding mechanism. Should be: 12 but is: 15")
-		);
-	}
 
 	private SecretKey generateAesSecretKey() {
 		SecureRandom secureRandom = new SecureRandom();

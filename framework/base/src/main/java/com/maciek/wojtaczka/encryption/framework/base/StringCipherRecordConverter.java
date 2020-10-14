@@ -13,15 +13,13 @@ class StringCipherRecordConverter {
 
 	private static final Charset CHARSET_FOR_BYTES_SERIALIZATION = ISO_8859_1;
 	private static final String SEPARATOR = ":";
-	private static final int BOOKMARKS_COUNT = 4;
+	private static final int BOOKMARKS_COUNT = 3;
 
 	String convertToString(CipherRecord cr) {
 		int[] bookmarks = new int[BOOKMARKS_COUNT];
-		String ivString = deserializeToString(cr.getIv());
 		bookmarks[0] = countDigits(cr.getEncryptionKeyVersion());
 		bookmarks[1] = cr.getEncryptionKeyName().length() + bookmarks[0];
 		bookmarks[2] = cr.getCipherMechanismType().length() + bookmarks[1];
-		bookmarks[3] = ivString.length() + bookmarks[2];
 
 		String bookmarksString = IntStream.of(bookmarks)
 										  .mapToObj(String::valueOf)
@@ -31,7 +29,6 @@ class StringCipherRecordConverter {
 				cr.getEncryptionKeyVersion() +
 				cr.getEncryptionKeyName() +
 				cr.getCipherMechanismType() +
-				ivString +
 				deserializeToString(cr.getCipherContent());
 	}
 
@@ -48,12 +45,10 @@ class StringCipherRecordConverter {
 		int encryptionKeyVersion = Integer.parseInt(cipherRecordWithNoBookmarks.substring(0, bookmarks[0]));
 		String encryptionKeyName = cipherRecordWithNoBookmarks.substring(bookmarks[0], bookmarks[1]);
 		String cipherMechanismType = cipherRecordWithNoBookmarks.substring(bookmarks[1], bookmarks[2]);
-		String iv = cipherRecordWithNoBookmarks.substring(bookmarks[2], bookmarks[3]);
-		String cipherContent = cipherRecordWithNoBookmarks.substring(bookmarks[3]);
+		String cipherContent = cipherRecordWithNoBookmarks.substring(bookmarks[2]);
 
 		return new CipherRecord(
 				serializeString(cipherContent),
-				serializeString(iv),
 				cipherMechanismType,
 				encryptionKeyName,
 				encryptionKeyVersion

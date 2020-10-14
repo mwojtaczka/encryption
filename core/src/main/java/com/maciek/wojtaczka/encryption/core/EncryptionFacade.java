@@ -40,9 +40,8 @@ public class EncryptionFacade {
 			throw new EncryptionException(mechanismType + " not found in the registry");
 
 		EncryptionKey latestKey = keyProvider.getKey(keyName, cipherRecord.getEncryptionKeyVersion(), mechanismType);
-		EncryptionMaterials encryptionMaterials = EncryptionMaterials.of(latestKey.getSecretKey(), cipherRecord.getIv());
 
-		return cipherMechanism.decrypt(cipherRecord.getCipherContent(), encryptionMaterials);
+		return cipherMechanism.decrypt(cipherRecord.getCipherContent(), latestKey.getSecretKey());
 	}
 
 }

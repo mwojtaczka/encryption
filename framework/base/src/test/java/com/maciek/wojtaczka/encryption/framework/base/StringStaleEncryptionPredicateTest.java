@@ -30,8 +30,8 @@ class StringStaleEncryptionPredicateTest {
 
 		//given
 		StringCipherRecordConverter converter = new StringCipherRecordConverter();
-		CipherRecord freshRecord = new CipherRecord(new byte[0], new byte[0], "algorithm", "keyName", 2);
-		CipherRecord staleRecord = new CipherRecord(new byte[0], new byte[0], "algorithm", "keyName", 1);
+		CipherRecord freshRecord = new CipherRecord(new byte[0], "algorithm", "keyName", 2);
+		CipherRecord staleRecord = new CipherRecord(new byte[0], "algorithm", "keyName", 1);
 		Entity entity = Entity.builder()
 							  .fresh(converter.convertToString(freshRecord))
 							  .stale(converter.convertToString(staleRecord))
@@ -51,8 +51,8 @@ class StringStaleEncryptionPredicateTest {
 
 		//given
 		StringCipherRecordConverter converter = new StringCipherRecordConverter();
-		CipherRecord freshRecord = new CipherRecord(new byte[0], new byte[0], "algorithm", "keyName", 2);
-		CipherRecord staleRecord = new CipherRecord(new byte[0], new byte[0], "algorithm", "keyName", 2);
+		CipherRecord freshRecord = new CipherRecord(new byte[0], "algorithm", "keyName", 2);
+		CipherRecord staleRecord = new CipherRecord(new byte[0], "algorithm", "keyName", 2);
 		Entity entity = Entity.builder()
 							  .fresh(converter.convertToString(freshRecord))
 							  .stale(converter.convertToString(staleRecord))
