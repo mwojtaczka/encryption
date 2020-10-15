@@ -28,9 +28,9 @@ public class EncryptionFacade {
 			throw new EncryptionException(mechanismType + " not found in the registry");
 
 		EncryptionKey latestKey = keyProvider.getLatestKey(keyName, mechanismType);
-		CipherResult cipherResult = cipherMechanism.encrypt(content, latestKey.getSecretKey());
+		byte[] cipherResult = cipherMechanism.encrypt(content, latestKey.getSecretKey());
 
-		return CipherRecord.of(cipherResult, latestKey);
+		return CipherRecord.of(cipherResult, mechanismType, latestKey);
 	}
 
 	public byte[] decryptRecord(CipherRecord cipherRecord, String keyName, String mechanismType) {

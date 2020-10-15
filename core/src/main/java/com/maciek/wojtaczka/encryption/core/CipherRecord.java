@@ -21,10 +21,10 @@ public class CipherRecord {
 	String encryptionKeyName;
 	int encryptionKeyVersion;
 
-	public static CipherRecord of(CipherResult cipherResult, EncryptionKey encryptionKey) {
+	public static CipherRecord of(byte[] cipherResult, String cipherMechanismType, EncryptionKey encryptionKey) {
 		return new CipherRecord(
-			cipherResult.getCipherContent(),
-			cipherResult.getCipherMechanism(),
+			cipherResult,
+			cipherMechanismType,
 			encryptionKey.getName(),
 			encryptionKey.getVersion());
 	}

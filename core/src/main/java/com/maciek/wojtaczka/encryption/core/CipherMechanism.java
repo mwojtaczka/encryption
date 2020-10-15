@@ -6,7 +6,7 @@ public interface CipherMechanism {
 
 	String getType();
 
-	CipherResult encrypt(byte[] content, SecretKey secretKey);
+	byte[] encrypt(byte[] content, SecretKey secretKey);
 
 	byte[] decrypt(byte[] cipherContent, SecretKey secretKey);
 

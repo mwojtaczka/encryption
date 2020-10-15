@@ -25,7 +25,7 @@ public class AesGcmNoPaddingMechanism implements CipherMechanism {
 	}
 
 	@Override
-	public CipherResult encrypt(byte[] content, SecretKey secretKey) {
+	public byte[] encrypt(byte[] content, SecretKey secretKey) {
 		try {
 			byte[] iv = generateInitialVector();
 			byte[] cipherContent = cipher(content, iv, secretKey);
@@ -34,7 +34,7 @@ public class AesGcmNoPaddingMechanism implements CipherMechanism {
 			System.arraycopy(iv, 0, ivAndContent, 0, iv.length);
 			System.arraycopy(cipherContent, 0, ivAndContent, iv.length, cipherContent.length);
 
-			return CipherResult.of(ivAndContent, ENCRYPTION_MECHANISM);
+			return ivAndContent;
 
 		} catch (NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | InvalidAlgorithmParameterException |
 				NoSuchPaddingException | IllegalBlockSizeException e) {

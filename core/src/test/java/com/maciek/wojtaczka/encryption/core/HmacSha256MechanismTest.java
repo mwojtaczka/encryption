@@ -10,7 +10,6 @@ import java.security.SecureRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 class HmacSha256MechanismTest {
 
@@ -28,12 +27,9 @@ class HmacSha256MechanismTest {
 		String toBeEncrypted = "foo_boo";
 		SecretKey secretKey = generateAesSecretKey();
 
-		CipherResult cipherResult = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
+		byte[] cipherResult = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
 
-		assertAll(
-				() -> assertThat(cipherResult.getCipherContent()).isNotEqualTo(toBeEncrypted.getBytes(CHARSET)),
-				() -> assertThat(cipherResult.getCipherMechanism()).isEqualTo("HmacSHA256")
-		);
+		assertThat(cipherResult).isNotEqualTo(toBeEncrypted.getBytes(CHARSET));
 	}
 
 	@Test
@@ -41,10 +37,10 @@ class HmacSha256MechanismTest {
 		String toBeEncrypted = "foo_boo";
 		SecretKey secretKey = generateAesSecretKey();
 
-		CipherResult cipherResult1 = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
-		CipherResult cipherResult2 = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
+		byte[] cipherResult1 = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
+		byte[] cipherResult2 = cipherMechanism.encrypt(toBeEncrypted.getBytes(CHARSET), secretKey);
 
-		assertThat(cipherResult1.getCipherContent()).isEqualTo(cipherResult2.getCipherContent());
+		assertThat(cipherResult1).isEqualTo(cipherResult2);
 	}
 
 	private SecretKey generateAesSecretKey() {

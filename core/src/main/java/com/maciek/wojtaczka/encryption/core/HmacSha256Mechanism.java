@@ -17,13 +17,12 @@ public class HmacSha256Mechanism implements CipherMechanism{
 	}
 
 	@Override
-	public CipherResult encrypt(byte[] content, SecretKey secretKey) {
+	public byte[] encrypt(byte[] content, SecretKey secretKey) {
 		try {
 			Mac sha256Hmac = Mac.getInstance(HMAC_SHA_256);
 			sha256Hmac.init(secretKey);
-			byte[] hashed = sha256Hmac.doFinal(content);
 
-			return CipherResult.of(hashed, HMAC_SHA_256);
+			return sha256Hmac.doFinal(content);
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new EncryptionException(e.getMessage(), e);
 		}
