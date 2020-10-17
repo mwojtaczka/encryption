@@ -56,10 +56,20 @@ public class EncryptionConfiguration {
 	}
 
 	@Bean
-	public FieldEncryptor<String> stringFieldEncryptor(EncryptionKeyProvider encryptionKeyProvider) {
-		CipherMechanism cipherMechanism = new AesGcmNoPaddingMechanism();
-		CipherMechanism blindIdHash = new HmacSha256Mechanism();
-		EncryptionFacade encryptionFacade = new EncryptionFacade(Set.of(cipherMechanism, blindIdHash), encryptionKeyProvider);
+	@ConditionalOnMissingBean(name = "aesGcmNoPaddingMechanism")
+	public CipherMechanism aesGcmNoPaddingMechanism() {
+		return new AesGcmNoPaddingMechanism();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "hmacSha256Mechanism")
+	public CipherMechanism hmacSha256Mechanism() {
+		return new HmacSha256Mechanism();
+	}
+
+	@Bean
+	public FieldEncryptor<String> stringFieldEncryptor(EncryptionKeyProvider encryptionKeyProvider, Set<CipherMechanism> cipherMechanisms) {
+		EncryptionFacade encryptionFacade = new EncryptionFacade(cipherMechanisms, encryptionKeyProvider);
 		return new StringEncryptor(encryptionFacade);
 	}
 
