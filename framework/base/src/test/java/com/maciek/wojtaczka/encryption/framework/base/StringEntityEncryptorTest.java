@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class StringFieldsEntityEncryptorTest {
+class StringEntityEncryptorTest {
 
 	@Mock
 	private EncryptionKeyProvider keyProvider;

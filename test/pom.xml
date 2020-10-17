@@ -13,7 +13,8 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>dummy</module>
-	</modules>
+        <module>benchmark</module>
+    </modules>
 
 
 </project>
