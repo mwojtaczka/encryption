@@ -18,14 +18,13 @@ import com.maciek.wojtaczka.encryption.framework.base.StaticKeyNameResolver;
 import com.maciek.wojtaczka.encryption.framework.base.StringEncryptor;
 import com.maciek.wojtaczka.encryption.framework.base.StringStaleEncryptionPredicate;
 import com.maciek.wojtaczka.encryption.framework.base.annotation.Encrypt;
-import com.maciek.wojtaczka.encryption.framework.spring.JpaUpdater;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.persistence.EntityManager;
 import java.util.Set;
 
 @Configuration
@@ -36,17 +35,16 @@ public class EncryptionConfiguration {
 	@Bean
 	public EntityEncryptor<String> encryptor(FieldEncryptor<String> stringFieldEncryptor, KeyNameResolver keyNameResolver,
 											 @Value("${encryption.framework.blindId.algorithm:HmacSHA256}") String hashingAlgorithm,
-											 EncryptionKeyProvider keyProvider, EntityUpdater entityUpdater) {
+											 EncryptionKeyProvider keyProvider, @Autowired(required = false) EntityUpdater entityUpdater) {
 
 		GenericEntityEncryptor<String> encryptor =
 				new GenericEntityEncryptor<>(stringFieldEncryptor, keyNameResolver, hashingAlgorithm, String.class);
-		StaleEncryptionPredicate predicate = new StringStaleEncryptionPredicate(keyProvider);
-		return new AsyncReencryptDecorator<>(encryptor, predicate, entityUpdater);
-	}
-
-	@Bean
-	EntityUpdater entityUpdater(EntityManager entityManager) {
-		return new JpaUpdater(entityManager);
+		if (entityUpdater != null) {
+			StaleEncryptionPredicate predicate = new StringStaleEncryptionPredicate(keyProvider);
+			return new AsyncReencryptDecorator<>(encryptor, predicate, entityUpdater);
+		} else {
+			return encryptor;
+		}
 	}
 
 	@Bean

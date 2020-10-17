@@ -8,10 +8,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 @Configuration
 @ConditionalOnClass(JpaRepository.class)
+@EnableAspectJAutoProxy
 public class SpringDataProxiesConfiguration {
 
 	@Bean
