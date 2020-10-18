@@ -7,8 +7,8 @@ import javax.crypto.SecretKey;
 @Value(staticConstructor = "of")
 public class EncryptionKey {
 
-	private String name;
-	private SecretKey secretKey;
-	private int version;
+	String name;
+	SecretKey secretKey;
+	int version;
 
 }

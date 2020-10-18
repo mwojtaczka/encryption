@@ -5,11 +5,11 @@ import com.maciek.wojtaczka.encryption.framework.base.EntityUpdater;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
-public class JpaUpdater implements EntityUpdater {
+public class JpaEntityUpdater implements EntityUpdater {
 
 	private final EntityManager entityManager;
 
-	public JpaUpdater(EntityManager entityManager) {
+	public JpaEntityUpdater(EntityManager entityManager) {
 		this.entityManager = entityManager;
 	}
 
