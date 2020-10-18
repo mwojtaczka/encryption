@@ -1,4 +1,4 @@
-# Encryption framework
+# Entity Encryption framework
 
 ⚠️ **under construction** ⚠️
 
@@ -19,7 +19,7 @@ To see an example go to [test dummy project](test/dummy)
 - mark String sensitive fields in your entity with `@Encrypt` annotation
 The annotation supports few features like: lazy decrypting, setting encryption algorithm, making field searchable.
 
-### Proxies (aspects)
+### Proxies (aspects) - experimental
 By default, proxies for encryption and hashing are enabled, and allow to automatic encrypt/decrypt entities.
 Encryption is being done by `EncryptionJpaAspect` that intercepts every call to `save*(*)` and `saveAll(*)` methods from 
 `JpaRepository` and encrypt the input.
@@ -28,8 +28,8 @@ For searchable fields `BlindIdSearchAspect` is enabled, it intercepts call to `f
 however it is in experimental stage and requires some convention (more info inside the class). Moreover, it doesn't 
 support all the cases.
 
-## Getting started without Spring Data JPA or without proxies or without Spring at all
-In case of no Spring Data proxies won't be enabled. Proxies can be also turned off manually by the properties:
+## Getting started without Spring Data JPA or without proxies
+In case of no Spring Data JPA proxies won't be enabled. Proxies can be also turned off manually by the properties:
 `encryption.framework.spring-data.proxy.encrypt.enabled=false`
 `encryption.framework.spring-data.proxy.hash.enabled=false`
 
@@ -46,8 +46,8 @@ module:
     <artifactId>encryption-framework-base</artifactId>
 </dependency>
 ```
-Then all the beans has to be configured manually. To see how one can look up configuration in spring-autoconfigure 
-module. While the instances are configured one can mark fields with `@Encrypt` annotation and the api.  
+Then all the beans has to be configured manually. To see how, one can look up configuration in spring-autoconfigure 
+module. While the instances are configured one can mark fields with `@Encrypt` annotation and use the api.  
 The api described below.
 
 ## Encryption framework api - 'encryption-framework-base'
@@ -75,14 +75,14 @@ Use `EntityEncryptor` instance either to encrypt or decrypt entity. U can specif
 perform the operation.
 
 #### Few words about encryption keys - and implementations that need to be overriden by the user 
-- key names and `KeyNameResolver`
+- key names and `KeyNameResolver`  
  Each entity can be encrypted with different key. One can pass the key name along with the entity:
  `EntityEncryptor.encryptObject(Object object, String keyName)`
  otherwise, the key name will be provided by the instance of `KeyNameResolver`. The only implementation of that 
  interface provided by the framework (`StaticKeyNameResolver`), returns static names: `encryption-key` for encryption 
  process and `blind-id-key` for blind id hashing. However, it is recommended to override the implementation, 
  for instance to resolve the name base on the entity or security context.
-- encryption keys and `EncryptionKeyProvider`
+- encryption keys and `EncryptionKeyProvider`  
  Each key name used to encrypt entity needs to conform to `EncryptionKey` provided by `EncryptionKeyProvider`. The only 
  implementation of the provider interface that framework currently provides is `InMemoryStaticKeyProvider` that generates 
  one key during class init and returns it regardless the key name or version. It is highly recommended implementing own 
@@ -91,7 +91,7 @@ perform the operation.
 ### Lazy decryption
 As decryption process is considered as costly, one can postpone it to the moment when the field is needed.  
 `@Encrypt(lazy=true)` needs to be setup to enable lazy decryption. Moreover, one has to specify the moment when 
-decryption will happen (typically the field's getter):
+decryption will happen and use `StaticDecryptor` (typically the field's getter):
 ```
 @Encrypt(lazy = true)
 String lazySensitive;
@@ -104,8 +104,8 @@ String getLazySensitive() {
 Until the getter is called, the field remains encrypted.
 
 ### Setting encryption algorithms
-For each sensitive field, different encryption mechanism can be specified:
-`@Encrypt(lazy = 'algorithmName')`
+For each sensitive field, different encryption mechanism can be specified:  
+`@Encrypt(algorithm = 'algorithmName')`  
 The algorithm name has to conform to one of the defined `CipherMechanism` implementations. The framework provides 
 with one implementation (`AesGcmNoPaddingMechanism`). User can define more mechanism by implementing the interface and 
 setting them up in the configuration.  
@@ -128,10 +128,12 @@ The blind id field will be populated with hash of the annotated field value. Fra
 algorithm: `HmacSHA256`. In case one would like to provide custom hashing mechanism, the way is similar as with 
 encryption mechanisms. Implement `CipherMechanism` interface (without decrypt method) and set it up while configuring 
 EntityEncryptor instance.
->Spring users that leverage on auto-configuration can just register another bean implementing `CipherMechanism`.
+>Spring users that leverage on auto-configuration can just register another bean implementing `CipherMechanism`
 >and set it up by property:  
->`encryption.framework.blindId.algorithm=hashingMechanismName`
-In order to query entities by the field, one has to hash the value before passing it to the querying method, like:
+>`encryption.framework.blindId.algorithm=hashingMechanismName`  
+
+In order to query entities by the field, one has to hash the value with `BlindIdCOnverter` before passing it 
+to the querying method, like:
 ```
 BlindIdConverter blindIdConverter;
 
@@ -150,5 +152,5 @@ the entity has been encrypted with is stale. If so, an asynchronous update is be
 To make it happen one has to provide implementation of `EntityUpdater` interface and decorate `EntityEncryptor` with 
 `AsyncReencryptDecorator`.
 >Spring users that leverage on auto-configuration have to only register bean that implements `EntityUpdater`.
->Moreover, Spring module of this framework provides with implementation for JPA based projects (`JpaEntityUpdater`). 
+>Moreover, Spring module of this framework provides with an implementation for JPA based projects (`JpaEntityUpdater`). 
 
