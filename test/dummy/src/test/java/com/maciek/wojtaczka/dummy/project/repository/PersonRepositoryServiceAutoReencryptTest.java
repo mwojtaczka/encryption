@@ -6,7 +6,6 @@ import com.maciek.wojtaczka.encryption.core.EncryptionKeyProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -18,6 +17,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(SpringExtension.class)
@@ -41,22 +41,14 @@ class PersonRepositoryServiceAutoReencryptTest {
 	@Test
 	void shouldAutomaticallyReencryptEntity() {
 		//given
-		EncryptionKey testKey1 = EncryptionKey.of("encryption-key", generateAesSecretKey(), 1);
-		EncryptionKey testKey2 = EncryptionKey.of("encryption-key", generateAesSecretKey(), 2);
-		EncryptionKey testBlindIdKey = EncryptionKey.of("blind-id-key", generateAesSecretKey(), 1);
-		Mockito.when(encryptionKeyProvider.getLatestKey("encryption-key", "AES/GCM/NoPadding"))
-			   .thenReturn(testKey1);
-		Mockito.when(encryptionKeyProvider.getKey("encryption-key", 1, "AES/GCM/NoPadding"))
-			   .thenReturn(testKey1);
-		Mockito.when(encryptionKeyProvider.getLatestKey("blind-id-key", "HmacSHA256"))
-			   .thenReturn(testBlindIdKey);
+		keyProviderWIllReturnKeys();
 		Person person = Person.builder()
 							   .name("Jenny")
 							   .surname("Smith")
 							   .build();
 		Person saved = repositoryService.save(person);
-		Mockito.when(encryptionKeyProvider.getLatestKey("encryption-key", "AES/GCM/NoPadding"))
-			   .thenReturn(testKey2);
+
+		keyProviderWillReturnNewKeys();
 
 		//when
 		repositoryService.findById(saved.getId());
@@ -66,8 +58,25 @@ class PersonRepositoryServiceAutoReencryptTest {
 		Object[] args = { saved.getId() };
 		String surnameColumnValue = jdbcTemplate.queryForObject("SELECT surname FROM person WHERE id=?", args, String.class);
 		assertThat(surnameColumnValue).isNotBlank();
-		String keyVersion = surnameColumnValue.split(":")[4].substring(0, 1);
+		String keyVersion = surnameColumnValue.split(":")[3].substring(0, 1);
 		assertThat(keyVersion).isEqualTo("2");
+	}
+
+	private void keyProviderWillReturnNewKeys() {
+		EncryptionKey testKey2 = EncryptionKey.of("encryption-key", generateAesSecretKey(), 2);
+		when(encryptionKeyProvider.getLatestKey("encryption-key", "AES/GCM/NoPadding"))
+			   .thenReturn(testKey2);
+	}
+
+	private void keyProviderWIllReturnKeys() {
+		EncryptionKey testKey1 = EncryptionKey.of("encryption-key", generateAesSecretKey(), 1);
+		EncryptionKey testBlindIdKey = EncryptionKey.of("blind-id-key", generateAesSecretKey(), 1);
+		when(encryptionKeyProvider.getLatestKey("encryption-key", "AES/GCM/NoPadding"))
+			   .thenReturn(testKey1);
+		when(encryptionKeyProvider.getKey("encryption-key", 1, "AES/GCM/NoPadding"))
+			   .thenReturn(testKey1);
+		when(encryptionKeyProvider.getLatestKey("blind-id-key", "HmacSHA256"))
+			   .thenReturn(testBlindIdKey);
 	}
 
 	private void sleep() {
